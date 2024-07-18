@@ -80,10 +80,9 @@ public class ConcreteVerticesGraph implements Graph<String> {
     		int index = getVertexIndex(vertex);
     		Vertex vertexToBeRemoved = this.vertices.get(index);
     		
-    		// Delete all the incoming edges to this vertex and delete all the outgoing edges to this vertex 
+    		// Delete all the incoming edges and the outgoing edges to and from this vertex respectively.
     		// and then delete the vertex itself
-    		vertexToBeRemoved.deleteAllOutgoingEdges();
-    		vertexToBeRemoved.deleteAllIncomingEdges();
+    		vertexToBeRemoved.deleteAllEdges();
     		vertices.remove(index);
     		return true;
     		
@@ -146,7 +145,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
      }
     
     /**
-     * Adds a weighted directed edge from source to target into the graph
+     * To this graph adds a weighted directed edge from source to target into the graph
      * If the given weight is positive and there exist no directed edge between 
      * source to target then it adds source or target vertex if they don't exist 
      * and adds an edge from source to target.
@@ -172,13 +171,13 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	
     	// Add to the source vertex an outgoing edge from source vertex  
     	// Add to the target vertex an incoming edge from source vertex 
-    	sourceVertex.addOutgoingEdge(targetVertex, weight);
-    	targetVertex.addIncomingEdge(sourceVertex, weight);
+    	sourceVertex.addEdgeTo(targetVertex, weight);
+    	//targetVertex.addEdgeFrom(sourceVertex, weight);
     	return true;
      }
      
      /**
-      * Adds a vertex into the graph if it is not already present in 
+      * To this graph adds a vertex into the graph if it is not already present in 
       * the graph and returns its position in this.vertices
       * 
       * @param vertex, a label of source of the edge
@@ -194,7 +193,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
       }
       
      /**
-      * Deletes the weighted directed edge from source to target into the graph
+      * From this graph deletes the weighted directed edge from source to target
       * If there exist no directed edge between source to target then it 
       * return false
       * 
@@ -216,14 +215,14 @@ public class ConcreteVerticesGraph implements Graph<String> {
       	
           // Delete the target,weight pair from sourceVertex.incomingVertex and
  	      // source,weight pair from targetVertex.outgoingVertex
-      	  sourceVertex.deleteOutgoingEdge(targetVertex);
-      	  targetVertex.deleteIncomingEdge(sourceVertex);
+      	  sourceVertex.deleteEdgeTo(targetVertex);
+      	  //targetVertex.deleteEdgeFrom(sourceVertex);
       	  return true;
       }
     
   
      /**
-      * Deletes the weighted directed edge from source to target into the graph
+      * From this graph changes the weight of an directed edge from source to target
       * If there exist no directed edge between source to target then it 
       * return false
       * 
@@ -245,8 +244,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
        	
         // Change the value of sourceVertex.outgoingVertex[target] to new weight and
 	    // that of targetVertex.incomingVertex[source] to new weight.
-       	 sourceVertex.changeOutgoingEdge(targetVertex, Weight);
-       	 targetVertex.changeIncomingEdge(sourceVertex, Weight);
+       	 sourceVertex.changeEdgeWeightTo(targetVertex, Weight);
+       	 targetVertex.changeEdgeWeightFrom(sourceVertex, Weight);
        	 return true;
        }
    
@@ -338,7 +337,7 @@ class Vertex {
     
 	// Representation invariant:
     //   name is a non empty string
-	//   The directed edges from all the vertices in incomingVertices to this vertex have a positive weight
+	//   The directed edges from all the vertices in the incomingVertices to this vertex have a positive weight
 	//   The directed edges from this vertex to all the vertices in outgoingVertices have a positive weight
     
 	// Safety from rep exposure:
@@ -435,7 +434,8 @@ class Vertex {
       }
       
 	/**
-	 * Adds a weighted directed edge from this vertex to the target vertex.
+	 * To this vertex adds an weighted incoming directed edge from source vertex and
+	 * to source vertex adds an weighted outgoing directed edge to this vertex 
 	 * If target vertex is already present or edge weight is zero,
 	 * the weight directed edge is not added
 	 * 
@@ -444,20 +444,27 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addIncomingEdge(Vertex source, Integer weight) {
+	 public boolean addEdgeFrom(Vertex source, Integer weight) {
 		 String sourceName = source.getName();
 		 // return false if there exist an edge from source or weight is zero
 		 if (hasEdgeFrom(sourceName) || weight == 0) {
 			 return false;
 		 }
+		 // The edge (source---weight--->this vertex ) will be incoming edge to this vertex and 
+		 // outgoing edge from source .
+		 // add an incoming edge from source to this vertex
 		 incomingVertices.put(sourceName,source);
 		 incomingEdges.put(sourceName, weight);
+		 
+		 // add an outgoing edge from source to this vertex
+		 source.addEdgeTo(this, weight);
 		 return true;
 	 }
 	
 	
 	/**
-	 * Adds a weighted directed edge from the source vertex to the this vertex.
+	 * To this vertex adds an outgoing weighted directed edge to target vertex and to 
+	 * target vertex adds an incoming weighted directed edge from this vertex
 	 * If the source vertex is already present or the edge weight is zero,
 	 * the weight directed edge is not added
 	 * 
@@ -466,26 +473,30 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addOutgoingEdge(Vertex target, Integer weight) {
+	 public boolean addEdgeTo(Vertex target, Integer weight) {
 		 String targetName = target.getName();
 		 if (hasEdgeTo(targetName) || weight == 0) {
 			 return false;
 		 }
 		 outgoingVertices.put(targetName, target);
 		 outgoingEdges.put(targetName, weight);
+		 
+		 // add an incoming edge from this vertex to this target
+	     target.addEdgeFrom(this, weight);
 		 return true;
 	}
 		
 	 
 	/**
-	 * Delete the weighted directed edge from the source vertex to this vertex 
+	 * From this vertex delete the weighted incoming directed edge from the source vertex and
+	 * from source vertex delete the weighted outgoing directed edge to this vertex 
 	 * If the weighted directed edge is not present, the vertex is not modified
 	 * 
 	 * @param source, a label of the source vertex,  
 	 * @return true if directed weight edge is deleted,
 	 *         otherwise,false. 
 	 */
-	  public boolean deleteIncomingEdge(Vertex source) {
+	  public boolean deleteEdgeFrom(Vertex source) {
 		 String sourceName = source.getName();
 		 // return false if there exist no edge 
 		 if (!hasEdgeFrom(sourceName)) {
@@ -501,21 +512,22 @@ class Vertex {
 		 incomingEdges.remove(sourceName);
 		 
 		 // delete the outgoing edge of the source from the source to this vertex 
-		 source.deleteOutgoingEdge(this);
+		 source.deleteEdgeTo(this);
 		 
 		 return true;
 	  }
 		
 	  
 	/**
-     * Delete the weight directed edge from this vertex to the target vertex 
+     * From this vertex delete the weight outgoing directed edge to the target vertex and
+     * from target vertex delete the weight incoming directed edge from this vertex 
      * If the weighted directed edge is not present, the vertex is not modified
      * 
 	 * @param target, a label of the target vertex,  
 	 * @return true if all the incoming directed weight edge are deleted,
 	 *         otherwise,false. 
 	 */
-	 public boolean deleteOutgoingEdge(Vertex target) {
+	 public boolean deleteEdgeTo(Vertex target) {
 		 String targetName = target.getName();
 		 // return false if there exist no edge 
 		 if (!hasEdgeFrom(targetName)) {
@@ -531,43 +543,29 @@ class Vertex {
 		 outgoingEdges.remove(targetName);
 		 
 		 // delete the incoming edge of target from this vertex.
-		 target.deleteIncomingEdge(this);
+		 target.deleteEdgeFrom(this);
 		 return true;
 	  }
-			
-		
-	/**
-	 * Delete all the incoming weighted directed edges to this vertex 
-	 * If the weighted directed edges are not present, the vertex is not modified
-	 *  
-	 * @return true if all the incoming directed weight edges are deleted,
-	 *         otherwise,false. 
-	 */
-	 public boolean deleteAllIncomingEdges() {
-		for(Vertex incomingNeighbour:incomingVertices.values()) {
-			deleteIncomingEdge(incomingNeighbour);
-		}
-		return true;
-	 }
-	
-		
-	/**
-	 * Delete all the outgoing weighted directed edges from this vertex 
-	 * If the weighted directed edges are not present, the vertex is not modified
-	 *  
-	 * @return true if all the outgoing directed weight edges are deleted,
-	 *         otherwise,false. 
-	 */
-	 public boolean deleteAllOutgoingEdges() {
-		for(Vertex outgoingNeighbour:outgoingVertices.values()) {
-			deleteOutgoingEdge(outgoingNeighbour);
-		}
-		return true;
-	 }
-	
 	
 	 /**
-	  * Changes the weight of directed edge from source to this vertex.
+	  * Delete all the incoming and outgoing weighted directed edges to and from this vertex 
+	  * If the weighted directed edges are not present, the vertex is not modified
+	  *  
+	  */
+	  public void deleteAllEdges() {
+		  // delete all incoming edges
+		  for(Vertex incomingNeighbour:incomingVertices.values()) {
+				deleteEdgeFrom(incomingNeighbour);
+			}
+		  // delete all outgoing edges
+		  for(Vertex outgoingNeighbour:outgoingVertices.values()) {
+				deleteEdgeTo(outgoingNeighbour);
+			}
+	  }
+		
+
+	 /**
+	  * From this vertex changes the weight of directed edge from source to this vertex.
 	  * If there exist is no edge between source or edge weight is zero,
 	  * the weight directed edge is not added
 	  * 
@@ -576,7 +574,7 @@ class Vertex {
 	  * @return true if directed weight edge is added,
 	  *         otherwise,false. 
 	  */
-	  public boolean changeIncomingEdge(Vertex source, Integer weight) {
+	  public boolean changeEdgeWeightFrom(Vertex source, Integer weight) {
 		  String sourceName = source.getName();
 		  // return false if there exist no edge from source or weight is zero
 		  if (!hasEdgeFrom(sourceName) || weight == 0) {
@@ -588,7 +586,7 @@ class Vertex {
 	  }
 	 
 	  /**
-	   * Changes the weight of directed edge from this vertex to target vertex.
+	   * From this vertex changes the weight of directed edge from this vertex to target vertex.
 	   * If there exist is no edge to target vertex or edge weight is zero,
 	   * the weight directed edge is not changed
 	   * 
@@ -597,7 +595,7 @@ class Vertex {
 	   * @return true if directed weight edge is changed,
 	   *         otherwise,false. 
 	   */
-	   public boolean changeOutgoingEdge(Vertex target, Integer weight) {
+	   public boolean changeEdgeWeightTo(Vertex target, Integer weight) {
 			String targetName = target.getName();
 			// return false if there exist no edge to target or weight is zero
 			if (!hasEdgeTo(targetName) || weight == 0) {

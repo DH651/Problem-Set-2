@@ -65,62 +65,47 @@ public class ConcreteEdgesGraph implements Graph<String> {
 		//         and since edge is immutable we have to delete the old edge from this.edges and add new edge to this.edges
 		//         Otherwise, new edge is being added to the graph, create a new edge and add it to this.edges
     	if (weight > 0) {
-    		
-    		if(this.hasEdgeBetween(source, target)) {
-    			
-    			int previousEdgeWeight = this.removeEdge(source, target); // remove exiting edge 
-    			this.edges.add(new Edge(source, target, weight)); // add new edge
-    			return previousEdgeWeight;
-    			
+    		if(hasEdgeBetween(source, target)) {
+    			int priorEdgeWeight = changeEdgeWeight(source, target, weight); 
+    			return priorEdgeWeight;
     		}else{
-    			
-    			// If source or target are absent from this.vertices, add source and target to this.vertices; 
-        		if(!this.vertices.contains(source)) {
-        			this.vertices.add(source);
-        		}
-        		if(!this.vertices.contains(target)) {
-        			this.vertices.add(target);
-        		}
-        		this.edges.add(new Edge(source, target, weight)); // add new edge
+    			addEdge(source, target, weight);
     			return 0;
     		}
     	}
     	
     	// Case 2: weight = 0, Edge is being removed.
-    	//         Check if edge is present in edges, if yes then remove it otherwise do nothing
+    	//         If edge is exist then removes such an edge otherwise does nothing and returns zero
     	if (weight == 0) {
-    		if(this.hasEdgeBetween(source, target)) {
-    			int previousEdgeWeight = this.removeEdge(source, target); // remove exiting edge 
-    			return previousEdgeWeight;
-    		}
-    		
+    		int removedEdgeWeight = removeEdge(source, target); // remove an existing edge 
+    		return removedEdgeWeight;
+	
     	}
     	return 0;
     }
     
     @Override public boolean remove(String vertex) {
     	// Removes all the incident from vertex or incident to vertex 
-    	for(int index = this.edges.size() - 1; index < 0; index--) {
-    		Edge currentEdge = this.edges.get(index);
+    	for(int index = edges.size() - 1; index < 0; index--) {
+    		Edge currentEdge = edges.get(index);
     		if(currentEdge.hasEdgeFrom(vertex) || currentEdge.hasEdgeTo(vertex)) {
-    			this.edges.remove(index);		
+    			edges.remove(index);		
     		}
     	}
-        boolean isDeleted = this.vertices.remove(vertex); //remove vertex from this.vertices
+        boolean isDeleted = vertices.remove(vertex); //remove vertex from this.vertices
     	return isDeleted;
     }
     
     @Override public Set<String> vertices() {
     	// Returns a copy of this.vertices
-    	Set<String> newVertices = new HashSet<String>();
-        newVertices.addAll(this.vertices);
+    	Set<String> newVertices = new HashSet<String>(vertices);
         return newVertices;
     }
     
     @Override public Map<String, Integer> sources(String target) {
     	// check if the current edge has the target equal to target  if yes then add the source of current edges to sources
     	Map<String, Integer> sources = new HashMap<String, Integer>(); 
-    	for(Edge currentEdge:this.edges) {
+    	for(Edge currentEdge:edges) {
     		if(currentEdge.hasEdgeTo(target)) {
     			sources.put(currentEdge.getHead(), currentEdge.getEdgeWeight());
     		}
@@ -131,7 +116,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     @Override public Map<String, Integer> targets(String source) {
     	// check if the current edge has the source equal to source if yes then add the target of current edges to targets
     	Map<String, Integer> targets = new HashMap<String, Integer>(); 
-    	for(Edge currentEdge:this.edges) {
+    	for(Edge currentEdge:edges) {
     		if(currentEdge.hasEdgeFrom(source)) {
     			targets.put(currentEdge.getTail(), currentEdge.getEdgeWeight());
     		}
@@ -146,16 +131,14 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param possibleHead, a label
      * @param possibleTail, a label
      * @return returns true if this graph has a directed edge from head to tail, 
-     *         otherwise returns false
+     *         otherwise returns false if no edge exists from head to tail
      */
     private boolean hasEdgeBetween(String possibleHead, String possibleTail) {
-    	if(this.vertices.add(possibleHead) && this.vertices.add(possibleTail) ) {
-    		for(Edge currentEdge:this.edges) {
+    	for(Edge currentEdge:this.edges) {
         		if( currentEdge.hasEdgeBetween(possibleHead, possibleTail) ) {
         			return true;
         		}
         	}
-    	}
     	return false;
     }
     
@@ -165,20 +148,69 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * 
      * @param possibleHead, a label
      * @param possibleTail, a label
-     * @return the previous weight of the edge, or zero if there was no such edge
+     * @return the weight of the removed edge, or zero if there was no such edge
      */
     private int removeEdge(String possibleHead, String possibleTail) {
     	// Iterate over this.edges and if there is an edge from possibleHead to possibleTail removes it
     	// and returns true, Otherwise, return false.
-    	for (Edge currentEdge:this.edges) {
+    	for (Edge currentEdge:edges) {
     		if(currentEdge.hasEdgeBetween(possibleHead, possibleTail)) {
-    			this.edges.remove(currentEdge);
+    			edges.remove(currentEdge);
     			return currentEdge.getEdgeWeight();
     		}
     	}
     	return 0;
     }
     
+    /**
+     * Adds a weighted directed edge from source to target to this graph. 
+     * Vertices with given label are added to this graph if they are not 
+     * already present.
+     * The edge that is being added should not already exist in the graph
+     * 
+     * @param source, a label of source of the edge being added
+     * @param target, a label of target of the edge being added
+     * @param weight, weight of the edge, must  be greater than zero
+     * @returns true if a directed edge is added from source to target
+     *          otherwise, returns false if no edge was added
+     */
+     private boolean addEdge(String source, String target, Integer weight) {
+    	// If source or target are absent from this.vertices, add source and target to this.vertices; 
+    	if (weight > 0) {
+    		if(!vertices.contains(source)) {
+     			vertices.add(source);
+     		}
+     		if(!vertices.contains(target)) {
+     			vertices.add(target);
+     		}
+     		edges.add(new Edge(source, target, weight)); // add new edge
+     		return true;
+     		
+    	}
+    	
+    	return false;
+     }
+     
+     /**
+      * Changes the weight of directed edge from source to target from this graph. 
+      * If such an edge does not exist or the new weight is zero or negative
+      * then graph is not modified and edge weight is not changed.
+      * 
+      * @param source, a label of source of the edge being changed
+      * @param target, a label of target of the edge being changed
+      * @param newWeight, new weight of the edge being changed, must be greater than zero
+      * @returns previous weight of the directed edge if the edge is changed,
+      *          otherwise, returns zero if there was no such edge
+      */
+      private int changeEdgeWeight(String source, String target, Integer newWeight) {
+     	// If source or target are absent from this.vertices, add source and target to this.vertices; 
+    	if(this.hasEdgeBetween(source, target)) {
+  			int previousEdgeWeight = removeEdge(source, target); // remove exiting edge 
+  			edges.add(new Edge(source, target, newWeight)); // add new edge
+  			return previousEdgeWeight;
+  		}
+    	return 0;
+      }
     // TODO toString()
     
 }

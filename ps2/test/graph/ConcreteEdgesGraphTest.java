@@ -72,7 +72,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // both the possibleHead and possibleTail are absent
     @Test
-    public void testgetEdgeBetween1() {
+    public void testgetEdgeBetweenHeadAndTailAbsent() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("New Delhi", "Mumbai");
     
@@ -82,7 +82,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // both the possibleHead and possibleTail are present
     @Test
-    public void testgetEdgeBetween2() {
+    public void testgetEdgeBetweenHeadAndTailPresent() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("California", "New York");
     
@@ -100,7 +100,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleHead is absent and possibleTail is present
     @Test
-    public void testgetEdgeBetween4() {
+    public void testgetEdgeBetweenHeadAbsentTailPresent() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("Tel Aviv", "New York");
     
@@ -109,7 +109,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleHead is at head
     @Test
-    public void testgetEdgeFrom1() {
+    public void testgetEdgeFromPossibleHeadAtHead() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeFrom("California");
     
@@ -118,7 +118,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleHead is not at head
     @Test
-    public void testgetEdgeFrom2() {
+    public void testgetEdgeFromPossibleHeadNotAtHead() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeFrom("Tel Aviv");
     
@@ -127,7 +127,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleTail is at tail
     @Test
-    public void testgetEdgeTo1() {
+    public void testgetEdgeToPossibleTailAtTail() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeTo("NewYork");
     
@@ -136,7 +136,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleTail is not at tail
     @Test
-    public void testgetEdgeTo2() {
+    public void testgetEdgeToPossibleTailNotAtTail() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeTo("Tel Aviv");
     
