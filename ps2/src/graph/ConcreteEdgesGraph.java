@@ -97,7 +97,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     
     @Override public boolean remove(String vertex) {
     	// Removes all the incident from vertex or incident to vertex 
-    	for(int index = edges.size() - 1; index < 0; index--) {
+    	for(int index = edges.size() - 1; index > -1; index--) {
     		Edge currentEdge = edges.get(index);
     		if(currentEdge.hasEdgeFrom(vertex) || currentEdge.hasEdgeTo(vertex)) {
     			edges.remove(index);		
@@ -257,24 +257,23 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	 Set<String> connectedVertices = new HashSet<String>();
     	 
     	// Add edges to result
-    	String result = "";
+    	String stringGraph = "";
       	for(Edge edge:edges) {
  
       		connectedVertices.add(edge.getHead());
       		connectedVertices.add(edge.getTail());
       		
-      		result += edge.toString();
-      		result += "\n";
+      		 stringGraph += edge.toString() + "\n";
       	}
       	
       	// Add those vertices that don't have incoming and outgoing edges
       	Set<String> isolatedVertices = new HashSet<String>(vertices);
       	isolatedVertices.removeIf(item -> connectedVertices.contains(item));
       	for(String vertex:isolatedVertices) {
-      		result += vertex;
-      		result += "\n";
+      		stringGraph += vertex.toString() + "\n";
       	}
-      	return result;
+      	
+      	return stringGraph.trim();
      }
     
 }

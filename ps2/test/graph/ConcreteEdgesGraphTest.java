@@ -53,9 +53,9 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     	graph.add("California");
     	graph.add("New York");
     	String returnedValue = graph.toString();
-    	String expectedValue = String.join("\n", "California", "New York");
+    	String expectedValue = String.join("\n", "New York", "California");
                 
-    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
     }
     
     // at-least one vertex, at-least one edge, zero isolated vertices
@@ -69,12 +69,12 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     	String returnedValue = graph.toString();
     	
     	String expectedValue = String.join("\n",
-                               "California----(2000)---->Delhi",
-                               "NewYork----(48)---->California",
-                               "London----(379)---->NewYork",
-                               "Berlin----(248)---->London"
+                               "California-----(2000)----->Delhi",
+                               "NewYork-----(48)----->California",
+                               "London-----(379)----->NewYork",
+                               "Berlin-----(248)----->London"
                                );
-    	
+        
     	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
     }
     
@@ -90,13 +90,13 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     	String returnedValue = graph.toString();
     	
     	String expectedValue = String.join("\n",
-                               "California----(2000)---->Delhi",
-                               "NewYork----(48)---->California",
-                               "London----(379)---->NewYork",
-                               "Berlin----(248)---->London",
+                               "California-----(2000)----->Delhi",
+                               "NewYork-----(48)----->California",
+                               "London-----(379)----->NewYork",
+                               "Berlin-----(248)----->London",
                                "Hong Kong");
     	
-    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
     }
       
     
@@ -153,8 +153,8 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     public void testgetEdgeBetweenHeadAndTailPresent() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("California", "New York");
-    
-    	assertFalse("Expected to get true, there is an edge between California to New York", returnedValue);
+      
+    	assertTrue("Expected to get true, there is an edge between California to New York", returnedValue);
     }
     
     // possibleHead is present and possibleTail is absent
@@ -197,8 +197,8 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     @Test
     public void testgetEdgeToPossibleTailAtTail() {
     	Edge edge = new Edge("California", "New York", 48);
-    	boolean returnedValue = edge.hasEdgeTo("NewYork");
-    
+    	boolean returnedValue = edge.hasEdgeTo("New York");
+        System.out.println(edge.getTail());
     	assertTrue("Expected to get true, there is edge to New York.", returnedValue);
     }
     
@@ -207,7 +207,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     public void testgetEdgeToPossibleTailNotAtTail() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeTo("Tel Aviv");
-    
+        
     	assertFalse("Expected to get false, there is no edge to Tel Aviv", returnedValue);
     }
     

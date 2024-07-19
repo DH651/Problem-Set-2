@@ -89,7 +89,7 @@ public abstract class GraphInstanceTest {
     	graph.add("A");
     	boolean returnedValue= graph.add("A");
     
-    	assertTrue("The add vertex was already present in the graph. "
+    	assertFalse("The add vertex was already present in the graph. "
     			+ "Hence, add instance method should have returned false.",  returnedValue);
     }
     
@@ -99,7 +99,7 @@ public abstract class GraphInstanceTest {
     	Graph<String> graph = emptyInstance();
     	boolean returnedValue= graph.add("A");
     
-    	assertFalse("The add vertex was absent from the graph."
+    	assertTrue("The add vertex was absent from the graph."
     			+ " Hence, add instance method should have returned true.",  returnedValue);
     
     }
@@ -112,11 +112,11 @@ public abstract class GraphInstanceTest {
     
     // Source is present, Target is absent , edge is absent, edge weight is zero.
     @Test
-    public void testAddEdge1() {
+    public void testAddEdgeSourcePresentTargetAbsentEdgeAbsentWeightZero() {
     	int expectedReturnedValue = 0;
     	Graph<String> graph = emptyInstance();
     	graph.add("California");
-    	
+    
     	int actualReturnedValue = graph.set("California", "New York", 0);
     	assertEquals("The source vertex was absent,target vertex was absent and thus, "
     			+ "edge was absent from the graph and edge weight was absent.", expectedReturnedValue , actualReturnedValue);
@@ -124,8 +124,8 @@ public abstract class GraphInstanceTest {
     
     // Source is present, Target is absent , edge is absent, edge weight is positive.
     @Test
-    public void testAddEdge2() {
-    	int expectedReturnedValue = 43;
+    public void testAddEdgeSourcePresentTargetAbsentEdgeAbsentWeightPositive() {
+    	int expectedReturnedValue = 0;
     	Graph<String> graph = emptyInstance();
     	graph.add("California");
     	
@@ -137,7 +137,7 @@ public abstract class GraphInstanceTest {
     
     // Source is absent, Target is absent , edge is absent, edge weight is zero.
     @Test
-    public void testAddEdge3() {
+    public void testAddEdgeSourceAbsentTargetAbsentEdgeAbsentWeightZero() {
     	int expectedReturnedValue = 0;
     	Graph<String> graph = emptyInstance();
 
@@ -149,8 +149,8 @@ public abstract class GraphInstanceTest {
     
     // Source is absent, Target is absent, edge is absent, edge weight is positive.
     @Test
-    public void testAddEdge4() {
-    	int expectedReturnedValue = 43;
+    public void testAddEdgeSourceAbsentTargetAbsentEdgeAbsentWeightPositive() {
+    	int expectedReturnedValue = 0;
     	Graph<String> graph = emptyInstance();
 
     	int actualReturnedValue = graph.set("California", "New York", 43);
@@ -162,7 +162,7 @@ public abstract class GraphInstanceTest {
     // Source is absent, Target is present, edge is absent, edge weight is positive.
     @Test
     public void testAddEdge5() {
-    	int expectedReturnedValue = 43;
+    	int expectedReturnedValue = 0;
     	Graph<String> graph = emptyInstance();
     	graph.add("New York");
 

@@ -69,13 +69,13 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     	String returnedValue = graph.toString();
     	
     	String expectedValue = String.join("\n",
-                               "California----(2000)---->Delhi",
-                               "NewYork----(48)---->California",
-                               "London----(379)---->NewYork",
-                               "Berlin----(248)---->London"
+    			               "NewYork-----(48)----->California",
+                               "California-----(2000)----->Delhi", 
+                               "London-----(379)----->NewYork",
+                               "Berlin-----(248)----->London"
                                );
     	
-    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
     }
     
     // at-least one vertex, at-least one edge, zero isolated vertices
@@ -90,11 +90,12 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     	String returnedValue = graph.toString();
     	
     	String expectedValue = String.join("\n",
-                               "California----(2000)---->Delhi",
-                               "NewYork----(48)---->California",
-                               "London----(379)---->NewYork",
-                               "Berlin----(248)---->London",
-                               "Hong Kong");
+	               "NewYork-----(48)----->California",
+                "California-----(2000)----->Delhi", 
+                "London-----(379)----->NewYork",
+                "Berlin-----(248)----->London",
+                "Hong Kong"
+                );
     	
     	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
     }
@@ -125,28 +126,23 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testEdgeFromWeightPositive() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
+    	
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = California.addEdgeFrom("NewYork",48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
     	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = California.addEdgeFrom("NewYork",48);
     	
     	assertFalse("Expected false because a edge was added from New York to California when an edge already existed previously", actualResult2);
     	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
+    	
     	
     	
     }
@@ -157,22 +153,15 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testEdgeFromWeightZeroEdgeAbsentFirst() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = California.addEdgeFrom("NewYork",0);
     	
-    	assertFalse("Expected false because a edge was added from New York to California when an edge already existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
-    	
-    	
+    	assertFalse("Expected false because no edge was added from New York to California", actualResult1);
+    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork")); 	
+    	assertEquals("Expected an edge from New York to California and of weight zero", 0,  California.getIncomingEdgeWeight("NewYork"));
     	
     }
     
@@ -181,32 +170,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source, weight is zero
     @Test
     public void testEdgeFromWeightZeroEdgePresentFirst() {
-    	Vertex California = new Vertex("California");
     	Vertex NewYork = new Vertex("NewYork");
-    	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+    
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeFrom("California",48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
+    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeFrom("California"));
+    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getIncomingEdgeWeight("California"));
     	
-    	boolean actualResult2 = California.addEdgeFrom("NewYork",0);
+    	boolean actualResult2 = NewYork.addEdgeFrom("California",0);
     	
     	assertFalse("Expected false because a edge was added from New York to California when an edge already existed previously", actualResult2);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
-    	
-    	
-    	
+    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeFrom("California"));
+    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getIncomingEdgeWeight("California")); 	
     }
     
     
@@ -214,29 +193,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Absence of outgoing edge from target, weight is greater than zero
     // Presence of outgoing edge from target, weight is greater than zero
     @Test
-    public void testEdgeToWeightPositive() {
-    	Vertex California = new Vertex("California");
+    public void testEdgeToWeightPositive() {  	
     	Vertex NewYork = new Vertex("NewYork");
-    	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+    
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeTo("California",48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = NewYork.addEdgeTo("California",48);
     	
     	assertFalse("Expected false because a edge was added from New York to California when an edge already existed previously", actualResult2);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California")); 	
     }
  
@@ -245,20 +217,17 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Absence of outgoing edge from source, weight is zero
     @Test
     public void testEdgeToWeightZeroEdgeAbsentFirst() {
-    	Vertex California = new Vertex("California");
+   
     	Vertex NewYork = new Vertex("NewYork");
     	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+    	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeTo("California",0);
     	
     	assertFalse("Expected false because an edge was added from New York to California whose weight was zero.", actualResult1);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	
@@ -270,32 +239,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of outgoing edge from source, weight is zero
     @Test
     public void testEdgeToWeightZeroEdgePresentFirst() {
-    	Vertex California = new Vertex("California");
     	Vertex NewYork = new Vertex("NewYork");
     	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
+    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));	
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeTo("California",48);
     	
-    	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertFalse("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
+    	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);  	
+    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = NewYork.addEdgeTo("California",0);
     	
-    	assertFalse("Expected false because an edge was added from New York to California whose weight was zero.", actualResult2);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
-    	
-    	
-    	
+    	assertFalse("Expected false because an edge was added from New York to California whose weight was zero.", actualResult2);	
+    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
+    	assertEquals("Expected no edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     }
     
@@ -305,30 +264,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testDeleteEdgeFromPresentEdge() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = California.addEdgeFrom("NewYork",48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
+    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));	
     	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
+    	
     	
     	boolean actualResult2 = California.deleteEdgeFrom("NewYork");
     	
     	assertTrue("Expected true because a edge was deleted from New York to California when an edge already existed previously", actualResult2);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
+    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));	
     	assertEquals("Expected no edge from New York to California and returned weight to be 0", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and returned weight to be 0", 0, NewYork.getOutgoingEdgeWeight("California"));
-    	
-    	
     }
     
     
@@ -337,17 +288,13 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testDeleteEdgeFromAbsentEdge() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
-    	
+	
     	boolean actualResult2 = California.deleteEdgeFrom("NewYork");
     	
     	assertFalse("Expected false because an edge was deleted from New York to California when no edge existed previously", actualResult2);
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and returned weight to be 0", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and returned weight to be 0", 0, NewYork.getOutgoingEdgeWeight("California"));
-    	
-    	
+	
     }
     
     
@@ -355,28 +302,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source
     @Test
     public void testDeleteEdgeToPresentEdge() {
-    	Vertex California = new Vertex("California");
+  
     	Vertex NewYork = new Vertex("NewYork");
-    	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+      	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeTo("California",48);
     	
-    	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
+    	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1); 	
+    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));    
     	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = NewYork.deleteEdgeTo("California");
-    	
+   
     	assertTrue("Expected true because an edge was deleted from New York to California when an edge already existed previously", actualResult2);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and returned weight to be 0", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and returned weight to be 0", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	
@@ -387,15 +328,13 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source
     @Test
     public void testDeleteEdgeToAbsentEdge() {
-    	Vertex California = new Vertex("California");
+    	
     	Vertex NewYork = new Vertex("NewYork");
     	
     	boolean actualResult2 = NewYork.deleteEdgeTo("California");
     	
     	assertFalse("Expected false because an edge was deleted from New York to California when no edge existed previously", actualResult2);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and returned weight to be 0", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and returned weight to be 0", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	
@@ -408,37 +347,29 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testChangeEdgeWeightFromPresentEdge() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = California.addEdgeFrom("NewYork", 48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
     	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = California.changeEdgeWeightFrom("NewYork", 24);
     	
     	assertTrue("Expected true because edgeweight of edge from New York to California was changed to 24 from 48 when an edge already existed previously", actualResult2);
     	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge from New York to California and of weight 48", 24,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 24, NewYork.getOutgoingEdgeWeight("California"));
+    
     	
     	boolean actualResult3 = California.changeEdgeWeightFrom("NewYork", 0);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to zero from 24 when an edge already existed previously", actualResult3);
     	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected an edge from New York to California and of weight 48", 24,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected an edge to California from New York  and of weight 48", 24, NewYork.getOutgoingEdgeWeight("California"));
-    	
+    
     }
     
     
@@ -448,29 +379,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testChangeEdgeWeightFromAbsentEdge() {
     	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     
     	boolean actualResult2 = California.changeEdgeWeightFrom("NewYork", 24);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to 24 when no edge already existed previously", actualResult2);
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and returned weight 0", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York and returned weight 0", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult3 = California.changeEdgeWeightFrom("NewYork", 0);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to zero when an edge already existed previously", actualResult3);
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
-    	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge from New York to California and returned weight 0", 0,  California.getIncomingEdgeWeight("NewYork"));
-    	assertEquals("Expected no edge to California from New York and returned weight 0", 0, NewYork.getOutgoingEdgeWeight("California"));
-    	
+ 
     }
    
 
@@ -479,36 +403,29 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source, new weight is zero.
     @Test
     public void testChangeEdgeWeightToPresentEdge() {
-    	Vertex California = new Vertex("California");
+    	
     	Vertex NewYork = new Vertex("NewYork");
     	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+    	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult1 = NewYork.addEdgeTo("California", 48);
     	
     	assertTrue("Expected true because a new edge was added from New York to California when no edge existed previously", actualResult1);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 48,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected an edge to California from New York  and of weight 48", 48, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult2 = NewYork.changeEdgeWeightTo("California", 24);
     	
     	assertTrue("Expected true because edgeweight of edge from New York to California was changed to 24 from 48 when an edge already existed previously", actualResult2);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 48", 24,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected an edge to California from New York  and of weight 48", 24, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult3 = NewYork.changeEdgeWeightTo("California", 0);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to zero from 24 when an edge already existed previously", actualResult3);
-    	assertTrue("There should be an edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertTrue("There should be an edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected an edge from New York to California and of weight 24", 24,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected an edge to California from New York  and of weight 24", 24, NewYork.getOutgoingEdgeWeight("California"));
     	
     }
@@ -519,28 +436,22 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Absence of incoming edge from source, new weight is zero.
     @Test
     public void testChangeEdgeWeightToAbsentEdge() {
-    	Vertex California = new Vertex("California");
-    	Vertex NewYork = new Vertex("NewYork");
     	
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
+    	Vertex NewYork = new Vertex("NewYork");
+    
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
     
     	boolean actualResult2 = NewYork.changeEdgeWeightTo("California", 24);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to 24 when no edge already existed previously", actualResult2);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and returned weight 0", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York and returned weight 0", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     	boolean actualResult3 = NewYork.changeEdgeWeightTo("California", 0);
     	
     	assertFalse("Expected false because edgeweight of edge from New York to California was changed to zero when an edge already existed previously", actualResult3);
-    	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
-    	assertEquals("Expected no edge from New York to California and returned weight 0", 0,  California.getIncomingEdgeWeight("NewYork"));
     	assertEquals("Expected no edge to California from New York and returned weight 0", 0, NewYork.getOutgoingEdgeWeight("California"));
     	
     }
@@ -559,12 +470,12 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testVertextoStringConnected() {
     	Vertex vertex = new Vertex("California");
-    	vertex.addEdgeFrom("New York", 24);
+    	vertex.addEdgeFrom("NewYork", 24);
     	vertex.addEdgeTo("Boston", 48);
     	String returnedValue = vertex.toString();
     	
     	String expectedValue = String.join("\n",
-                "NewYork----(24)---->California",
+                "NewYork-----(24)----->California",
                 "California-----(48)----->Boston"
                  );
     	

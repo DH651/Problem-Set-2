@@ -58,7 +58,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     		List<Integer> outgoingVertexIndices = getVertexIndices(vertex.getOutgoingNeighbours());
     		for(Integer index:outgoingVertexIndices) {
     			Vertex outgoingVertex = vertices.get(index);
-    			Integer weight = vertex.getIncomingEdgeWeight(outgoingVertex.getName());
+    			Integer weight = vertex.getOutgoingEdgeWeight(outgoingVertex.getName());
     			assert outgoingVertex.hasEdgeFrom(vertex.getName(), weight);
     		}
     	}
@@ -165,12 +165,12 @@ public class ConcreteVerticesGraph implements Graph<String> {
     /**
      * Returns the weight of the directed edge from source to target from the graph
      * If there exist no directed edge between source to target then it 
-     * return -1
+     * return zero.
      * 
      * @param source, a label of source of the edge
      * @param target, a label of target of the edge
      * @returns returns weight of the directed edge from source to target (if it exist)
-     *          otherwise, returns -1
+     *          otherwise, returns zero if there is no directed edge from source to target
      */
      private int getEdgeWeight(String source, String target) {
    	  	if(hasEdgeBetween(source,target)){
@@ -179,7 +179,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
           	Vertex sourceVertex = vertices.get(sourceIndex);
           	 return sourceVertex.getOutgoingEdgeWeight(target);
      	 }
-   	  	return -1;
+   	  	return 0;
    	    
      }
     
@@ -394,15 +394,17 @@ public class ConcreteVerticesGraph implements Graph<String> {
      */
      public String toString() {
     	Set<String> subStringSet = new HashSet<String>();
-    	String result = "";
+    	String stringGraph = "";
     	for (Vertex vertex:vertices) {
-    		String substring = vertex.toString();
-    		if(!subStringSet.contains(substring)) {
-    			result += substring;
-    			result += "\n";
+    		for(String substring:vertex.toString().split("\n")) {
+    			if(!subStringSet.contains(substring)) {
+    				subStringSet.add(substring);
+    				stringGraph += substring + "\n" ;
+    			}
     		}
     	}
-      	return result;
+        
+      	return stringGraph.trim();
      }
     
 }
@@ -498,16 +500,16 @@ class Vertex {
      /**
       * Returns the weight of the directed edge from this vertex to target
       * If there exist no directed edge between this vertex to target then it 
-      * return -1
+      * return 0
       * 
       * @param target, a label of target of the edge
       * @returns returns weight of the directed edge from source to target (if it exist)
-      *          otherwise, returns -1
+      *          otherwise, returns 0 if there exist no edge from this vertex to target
       */
       public int getOutgoingEdgeWeight(String target) {
  		  // return false if there exist an edge from source or weight is zero
  		  if (!hasEdgeTo(target)) {
- 			 return -1;
+ 			 return 0;
  		  }
  		  return outgoingEdges.get(target);
       }
@@ -515,16 +517,16 @@ class Vertex {
       /**
        * Returns the weight of the directed edge from source to this vertex 
        * If there exist no directed edge between source to this vertex then it 
-       * return -1
+       * return 0
        * 
        * @param source, a label of target of the edge
        * @returns returns weight of the directed edge from source to target (if it exist)
-       *          otherwise, returns -1
+       *          otherwise, returns 0 if there exist no edge from source to this vertex
        */
        public int getIncomingEdgeWeight(String source) {
   		  // return false if there exist an edge from source or weight is zero
   		  if (!hasEdgeFrom(source)) {
-  			 return -1;
+  			 return 0;
   		  }
   		  return incomingEdges.get(source);
        }
@@ -636,7 +638,7 @@ class Vertex {
 	 */
 	 public boolean deleteEdgeTo(String target) {
 		 // return false if there exist no edge 
-		 if (!hasEdgeFrom(target)) {
+		 if (!hasEdgeTo(target)) {
 			return false;
 		 }
 		 
@@ -799,12 +801,14 @@ class Vertex {
 	    	// if vertex is connected return all the incoming and outgoing edges
 	    	String result = "";
 	    	for (Map.Entry<String, Integer> entry: incomingEdges.entrySet()) {
-	    		result += String.format("%s-----(%d)----->%s",this.name ,entry.getValue() ,entry.getKey());
+	    		result += String.format("%s-----(%d)----->%s",entry.getKey(), entry.getValue(), this.name);
+	    	    result += "\n";
 	    	}
 	    	for (Map.Entry<String, Integer> entry: outgoingEdges.entrySet()) {
-	    		result += String.format("%s-----(%d)----->%s",this.name ,entry.getValue() ,entry.getKey());
+	    		result += String.format("%s-----(%d)----->%s",this.name, entry.getValue(), entry.getKey());
+	    	    result += "\n";
 	    	}
-	    	return result;
+	    	return result.trim();
 	    }
 	    
 }
