@@ -23,26 +23,94 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     @Override public Graph<String> emptyInstance() {
         return new ConcreteEdgesGraph();
     }
+   
     
     /*
      * Testing ConcreteEdgesGraph...
      */
     
     // Testing strategy for ConcreteEdgesGraph.toString()
-    //   TODO
+    //   partition on number of vertices: zero, at-least one
+    //   partition on number of edges: zero, at-least one
+    //   partition on number of isolated vertices: zero, at-least one
     
-    // TODO tests for ConcreteEdgesGraph.toString()
+    // tests for ConcreteEdgesGraph.toString()
+    
+    // zero vertices, zero edges, zero isolated vertex
+    @Test
+    public void testtoStringZeroVertexZeroEdges() {
+    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	String returnedValue = graph.toString();
+    	String expectedValue = "";
+    	
+    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    }
+    
+    // atleast one vertex, zero edge, at-least isolated vertex
+    @Test
+    public void testtoStringZeroVertexAtleastOneEdge() {
+    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	graph.add("California");
+    	graph.add("New York");
+    	String returnedValue = graph.toString();
+    	String expectedValue = String.join("\n", "California", "New York");
+                
+    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    }
+    
+    // at-least one vertex, at-least one edge, zero isolated vertices
+    @Test
+    public void testtoStringAtleastVertexAtleastOneEdge() {
+    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+        graph.set("California", "Delhi", 2000);
+        graph.set("NewYork", "California", 48);
+        graph.set("London", "NewYork", 379);
+        graph.set("Berlin", "London", 248);
+    	String returnedValue = graph.toString();
+    	
+    	String expectedValue = String.join("\n",
+                               "California----(2000)---->Delhi",
+                               "NewYork----(48)---->California",
+                               "London----(379)---->NewYork",
+                               "Berlin----(248)---->London"
+                               );
+    	
+    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    }
+    
+    // at-least one vertex, at-least one edge, zero isolated vertices
+    @Test
+    public void testtoStringAtleastVertexAtleastOneEdgeOneIsolatedVertex() {
+    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+        graph.set("California", "Delhi", 2000);
+        graph.set("NewYork", "California", 48);
+        graph.set("London", "NewYork", 379);
+        graph.set("Berlin", "London", 248);
+        graph.add("Hong Kong");
+    	String returnedValue = graph.toString();
+    	
+    	String expectedValue = String.join("\n",
+                               "California----(2000)---->Delhi",
+                               "NewYork----(48)---->California",
+                               "London----(379)---->NewYork",
+                               "Berlin----(248)---->London",
+                               "Hong Kong");
+    	
+    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
+    }
+      
     
     /*
      * Testing Edge...
      */
-    
+
     // Testing strategy for Edge
     //   partition on possibleHead: absent, present
     //   partition on vertex: absent, present
     
+
     // tests for operations of Edge
-    // 
+   
     @Test
     public void testgetHead() {
     	Edge edge = new Edge("California", "New York", 48);
@@ -91,7 +159,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     // possibleHead is present and possibleTail is absent
     @Test
-    public void testgetEdgeBetween3() {
+    public void testgetEdgeBetweenHeadPresentTailAbsent() {
     	Edge edge = new Edge("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("California", "London");
     
@@ -141,6 +209,16 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     	boolean returnedValue = edge.hasEdgeTo("Tel Aviv");
     
     	assertFalse("Expected to get false, there is no edge to Tel Aviv", returnedValue);
+    }
+    
+    
+    @Test
+    public void testEdgetoString() {
+    	Edge edge = new Edge("California", "New York", 48);
+    	String returnedValue = edge.toString();
+    	String expectedValue = "California-----(48)----->New York";
+    	
+    	assertEquals("Returned string does not matches the expected string", returnedValue, expectedValue);
     }
     
 }

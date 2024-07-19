@@ -30,7 +30,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     
     // Safety from rep exposure:
     //   All the fields are private and final
-    //   The mutators like set, remove, vertices, sources, targets don't expose the internal representation to the client
+    //   The mutators like set, remove, vertices, sources, targets don't expose ADT's internal rep to the client
     
     
     // Constructor to create a graph with vertices and edges
@@ -44,7 +44,13 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	
     }
     
-    // TODO checkRep
+    // checkRep
+    // Check that the rep invariant is true
+    private void checkRep() {
+    	for(Edge edge:edges) {
+    		assert vertices.contains(edge.getHead()) && vertices.contains(edge.getTail());
+    	}
+    }
     
     @Override public boolean add(String vertex) {
     	// if vertex is already present in vertices, return false 
@@ -53,6 +59,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     		return false;
     	}else {
     		vertices.add(vertex);
+    		checkRep();
     		return true;
     	}
     	
@@ -67,9 +74,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	if (weight > 0) {
     		if(hasEdgeBetween(source, target)) {
     			int priorEdgeWeight = changeEdgeWeight(source, target, weight); 
+    			checkRep();
     			return priorEdgeWeight;
     		}else{
     			addEdge(source, target, weight);
+    			checkRep();
     			return 0;
     		}
     	}
@@ -78,9 +87,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	//         If edge is exist then removes such an edge otherwise does nothing and returns zero
     	if (weight == 0) {
     		int removedEdgeWeight = removeEdge(source, target); // remove an existing edge 
+    		checkRep();
     		return removedEdgeWeight;
 	
     	}
+    	checkRep();
     	return 0;
     }
     
@@ -99,6 +110,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     @Override public Set<String> vertices() {
     	// Returns a copy of this.vertices
     	Set<String> newVertices = new HashSet<String>(vertices);
+    	checkRep();
         return newVertices;
     }
     
@@ -110,6 +122,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     			sources.put(currentEdge.getHead(), currentEdge.getEdgeWeight());
     		}
     	}
+    	checkRep();
     	return sources;
     }
     
@@ -121,6 +134,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     			targets.put(currentEdge.getTail(), currentEdge.getEdgeWeight());
     		}
     	}
+    	checkRep();
     	return targets;
     }
     
@@ -138,7 +152,8 @@ public class ConcreteEdgesGraph implements Graph<String> {
         		if( currentEdge.hasEdgeBetween(possibleHead, possibleTail) ) {
         			return true;
         		}
-        	}
+        }
+    	checkRep();
     	return false;
     }
     
@@ -159,14 +174,16 @@ public class ConcreteEdgesGraph implements Graph<String> {
     			return currentEdge.getEdgeWeight();
     		}
     	}
+    	checkRep();
     	return 0;
     }
     
     /**
      * Adds a weighted directed edge from source to target to this graph. 
      * Vertices with given label are added to this graph if they are not 
-     * already present.
-     * The edge that is being added should not already exist in the graph
+     * present.
+     * If such an edge exist or the new weight is zero or negative
+     * then graph is not modified and new edge is not added
      * 
      * @param source, a label of source of the edge being added
      * @param target, a label of target of the edge being added
@@ -176,7 +193,9 @@ public class ConcreteEdgesGraph implements Graph<String> {
      */
      private boolean addEdge(String source, String target, Integer weight) {
     	// If source or target are absent from this.vertices, add source and target to this.vertices; 
-    	if (weight > 0) {
+    	if (hasEdgeBetween(source, target) | weight <= 0) {
+    		return false;
+    	}else {
     		if(!vertices.contains(source)) {
      			vertices.add(source);
      		}
@@ -184,11 +203,10 @@ public class ConcreteEdgesGraph implements Graph<String> {
      			vertices.add(target);
      		}
      		edges.add(new Edge(source, target, weight)); // add new edge
+     		checkRep();
      		return true;
-     		
     	}
     	
-    	return false;
      }
      
      /**
@@ -204,14 +222,60 @@ public class ConcreteEdgesGraph implements Graph<String> {
       */
       private int changeEdgeWeight(String source, String target, Integer newWeight) {
      	// If source or target are absent from this.vertices, add source and target to this.vertices; 
-    	if(this.hasEdgeBetween(source, target)) {
+    	if(this.hasEdgeBetween(source, target) && newWeight > 0 ) {
   			int previousEdgeWeight = removeEdge(source, target); // remove exiting edge 
   			edges.add(new Edge(source, target, newWeight)); // add new edge
+  			checkRep();
   			return previousEdgeWeight;
   		}
+    	
     	return 0;
       }
-    // TODO toString()
+  
+    /**
+     * Returns a string representation of the graph 
+     * 
+     * For Example:
+     * ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+     * graph.set(California, Delhi, 2000);
+     * graph.set(NewYork, California, 48);
+     * graph.set(London, NewYork, 379);
+     * graph.set(Berlin, London, 248);
+     * graph.add("Hong Kong");
+     * System.out.println(graph);
+     * 
+     * Output:
+     * California-----(2000)----->Delhi
+     * New York-----(48)----->California
+     * London-----(379)----->New York
+     * Berlin-----(248)----->London
+     * Hong Kong
+     * 
+     * @return a string representation of the graph
+     */
+     public String toString() {
+    	 Set<String> connectedVertices = new HashSet<String>();
+    	 
+    	// Add edges to result
+    	String result = "";
+      	for(Edge edge:edges) {
+ 
+      		connectedVertices.add(edge.getHead());
+      		connectedVertices.add(edge.getTail());
+      		
+      		result += edge.toString();
+      		result += "\n";
+      	}
+      	
+      	// Add those vertices that don't have incoming and outgoing edges
+      	Set<String> isolatedVertices = new HashSet<String>(vertices);
+      	isolatedVertices.removeIf(item -> connectedVertices.contains(item));
+      	for(String vertex:isolatedVertices) {
+      		result += vertex;
+      		result += "\n";
+      	}
+      	return result;
+     }
     
 }
 
@@ -232,10 +296,12 @@ class Edge {
     
     // Abstraction function:
     //   AF(source, target, weight) = An edge from vertex this.source to vertex this.target vertex with edge weight this.weight
-    // Representation invariant:
-    //   this.source and this.target are no empty strings.
+    
+	// Representation invariant:
+    //   this.source and this.target are non empty strings.
 	//   this.weight is positive.
-    // Safety from rep exposure:
+    
+	// Safety from rep exposure:
     //   all the fields are private and final.
 	//   This class has no mutators and producer.
 	//   All the observers and creators don't expose the internal representation.
@@ -245,9 +311,16 @@ class Edge {
     	this.head = head;
     	this.tail = tail;
     	this.weight = weight;
+    	checkRep();
     }
-    // checkRep
     
+    // checkRep
+    // Check that the rep invariant is true
+    private void checkRep() {
+    	assert !head.equals("");
+    	assert !tail.equals("");
+    	assert weight > 0;
+    }
     
     /** 
      * Returns the head of this directed edge.
@@ -319,6 +392,20 @@ class Edge {
     }
     
     
-    // TODO toString()
+    /**
+     * Returns a string representation of the edge 
+     * 
+     * For Example:
+     * Edge edge = new Edge(California, New York, 48);
+     * System.println(edge);
+     * 
+     * Output:
+     * California-----(weight)----->New York
+     * 
+     * @return a string representation of the edge
+     */
+    public String toString() {
+    	return String.format("%s-----(%d)----->%s",this.head, this.weight, this.tail);
+    }
     
 }

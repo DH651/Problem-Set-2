@@ -28,19 +28,41 @@ public class ConcreteVerticesGraph implements Graph<String> {
     
     // Representation invariant:
     //   1. All the vertices in this.vertices are unique and have a non empty string as their name
-    //   2. For every pair x,w in y.incomingVertices, there exist a pair y,w in x.outgoingVertices
+    //   2. For every pair x,w in y.incomingEdges, there exist a pair y,w in x.outgoingEdges
     //      where x,y are a present in this.vertices, and w is a integer greater than zero
-    //   3. For every pair x,w in y.outgoingVertices, there exist a pair y,w in x.incomingVertices
+    //   3. For every pair x,w in y.outgoingEdges, there exist a pair y,w in x.incomingEdges
     //      where x,y are a Vertex type objects present in this.vertices, and w is a integer greater than zero
   
     // Safety from rep exposure:
-    //   TODO
+    //  All the fields are private and final
+    //  The mutators like set, remove, vertices, sources, targets don't expose ADT's internal rep to the client
+    
     
     // constructor
     // ConcreteVerticesGraph() to create an empty graph
-    // ConcreteVertices(List<Vertex> vertices) to create a graph with vertices and edges
+    public ConcreteVerticesGraph() {
+    	
+    }
     
     // TODO checkRep
+    // Check that the rep invariant is true
+    private void checkRep() {
+    	for(Vertex vertex:vertices) {
+    		List<Integer> incomingVertexIndices = getVertexIndices(vertex.getIncomingNeighbours());
+    		for(Integer index:incomingVertexIndices) {
+    			Vertex incomingVertex = vertices.get(index);
+    			Integer weight = vertex.getIncomingEdgeWeight(incomingVertex.getName());
+    			assert incomingVertex.hasEdgeTo(vertex.getName(), weight);
+    		}
+    		
+    		List<Integer> outgoingVertexIndices = getVertexIndices(vertex.getOutgoingNeighbours());
+    		for(Integer index:outgoingVertexIndices) {
+    			Vertex outgoingVertex = vertices.get(index);
+    			Integer weight = vertex.getIncomingEdgeWeight(outgoingVertex.getName());
+    			assert outgoingVertex.hasEdgeFrom(vertex.getName(), weight);
+    		}
+    	}
+    }
     
     @Override public boolean add(String vertex) {
     	// create a Vertex object and add it to this.vertices
@@ -54,10 +76,12 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	if(weight > 0) {
     		if(hasEdgeBetween(source,target)) {
     			int oldWeight = getEdgeWeight(source, target);
-    	    	changeEdgeWeight(source, target, weight);  
+    	    	changeEdgeWeight(source, target, weight);
+    	    	checkRep();
     	    	return oldWeight;
     	    }else {
     	    	addEdge(source, target, weight);
+    	    	checkRep();
     	    	return 0;
     	    }
     	}
@@ -67,6 +91,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	if(weight == 0){
     		int oldWeight = getEdgeWeight(source, target);
     		deleteEdge(source,target);
+    		checkRep();
     	    return oldWeight;
     	}
     	
@@ -76,20 +101,34 @@ public class ConcreteVerticesGraph implements Graph<String> {
     @Override public boolean remove(String vertex) {
     	// if the vertex to be removed is absent from this.vertices then return false
     	if(hasVertex(vertex)) {
-    		// find the index of the vertex to be removed
-    		int index = getVertexIndex(vertex);
-    		Vertex vertexToBeRemoved = this.vertices.get(index);
+    		// find the indices of the outgoing and incoming neighbours from and to the given vertex
+    		int removedVertexIndex = getVertexIndex(vertex);
+    		Vertex vertexToBeRemoved = vertices.get(removedVertexIndex);
     		
     		// Delete all the incoming edges and the outgoing edges to and from this vertex respectively.
     		// and then delete the vertex itself
     		vertexToBeRemoved.deleteAllEdges();
-    		vertices.remove(index);
+    		vertices.remove(removedVertexIndex);
+    		
+    		// Delete all the outgoing edges from vertexToBeremoved 
+    		List<Integer> outgoingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getOutgoingNeighbours());
+    		for (Integer neighbourIndex:outgoingNeighboursIndices) {
+    			Vertex neighbourVertex = vertices.get(neighbourIndex);
+    			neighbourVertex.deleteEdgeTo(vertex);
+    		}
+    		// Delete all the incoming edges to vertexToBeremoved
+    		List<Integer> incomingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getIncomingNeighbours());
+    		for (Integer neighbourIndex:incomingNeighboursIndices) {
+    			Vertex neighbourVertex = vertices.get(neighbourIndex);
+    			neighbourVertex.deleteEdgeFrom(vertex);
+    		}
+    		checkRep();
     		return true;
     		
-    	}else {	
-    		return false;
-    		
     	}
+    	checkRep();
+    	return false;
+    	
     }
     
     @Override public Set<String> vertices() {
@@ -171,8 +210,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	
     	// Add to the source vertex an outgoing edge from source vertex  
     	// Add to the target vertex an incoming edge from source vertex 
-    	sourceVertex.addEdgeTo(targetVertex, weight);
-    	//targetVertex.addEdgeFrom(sourceVertex, weight);
+    	sourceVertex.addEdgeTo(target, weight);
+    	targetVertex.addEdgeFrom(source, weight);
     	return true;
      }
      
@@ -215,8 +254,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
       	
           // Delete the target,weight pair from sourceVertex.incomingVertex and
  	      // source,weight pair from targetVertex.outgoingVertex
-      	  sourceVertex.deleteEdgeTo(targetVertex);
-      	  //targetVertex.deleteEdgeFrom(sourceVertex);
+      	  sourceVertex.deleteEdgeTo(target);
+      	  targetVertex.deleteEdgeFrom(source);
       	  return true;
       }
     
@@ -244,8 +283,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
        	
         // Change the value of sourceVertex.outgoingVertex[target] to new weight and
 	    // that of targetVertex.incomingVertex[source] to new weight.
-       	 sourceVertex.changeEdgeWeightTo(targetVertex, Weight);
-       	 targetVertex.changeEdgeWeightFrom(sourceVertex, Weight);
+       	 sourceVertex.changeEdgeWeightTo(target, Weight);
+       	 targetVertex.changeEdgeWeightFrom(source, Weight);
        	 return true;
        }
    
@@ -307,13 +346,69 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	}
     	return false;
     }
+     
+    /**
+     * Returns a list of indices of the given vertices from this.vertices in the same order
+     * as they appear in the input list
+     * 
+     * @param possibleVertices, a set of vertices, all vertices must be present in this graph
+     * @return a list of indices of vertex in the same order as they appear in the 
+     *         input list
+     */
+    private List<Integer> getVertexIndices(Set<String> possibleVertices) {
+    	List<Integer> indices = new ArrayList<Integer>();
+    	for (int index = 0; index < vertices.size(); index++) {
+    		Vertex currentVertex = vertices.get(index);
+    		String currentVertexName = currentVertex.getName();
+    		if(possibleVertices.contains(currentVertexName)) {
+    			indices.add(index);
+    		}
+    	}
+    	return indices;
+    }
     
-    // TODO toString()
+    /**
+     * Returns a string representation of the graph 
+     * 
+     * For Example:
+     * ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+     * graph.set(California, Delhi, 2000);
+     * graph.set(NewYork, California, 48);
+     * graph.add(Seoul);
+     * graph.set(London, NewYork, 379);
+     * graph.set(Berlin, London, 248);
+     * graph.add(Hong Kong);
+     * 
+     * System.out.println(graph);
+     * 
+     * Output:
+     * California-----(2000)----->Delhi
+     * New York-----(48)----->California
+     * Seoul
+     * London-----(379)----->New York
+     * Berlin-----(248)----->London
+     * Hong Kong
+     * 
+     * 
+     * @return a string representation of the graph
+     */
+     public String toString() {
+    	Set<String> subStringSet = new HashSet<String>();
+    	String result = "";
+    	for (Vertex vertex:vertices) {
+    		String substring = vertex.toString();
+    		if(!subStringSet.contains(substring)) {
+    			result += substring;
+    			result += "\n";
+    		}
+    	}
+      	return result;
+     }
     
 }
 
 /**
- * TODO specification
+ * specification
  * Mutable.
  * This class is internal to the rep of ConcreteVerticesGraph.
  * 
@@ -324,8 +419,8 @@ class Vertex {
     
     // fields
 	private final String name;                                                                 // name of the vertex
-	private final Map<String, Vertex>  incomingVertices = new HashMap<String, Vertex>();                
-	private final Map<String, Vertex>  outgoingVertices = new HashMap<String, Vertex>(); 
+	//private final Map<String, Vertex>  incomingVertices = new HashMap<String, Vertex>();                
+	//private final Map<String, Vertex>  outgoingVertices = new HashMap<String, Vertex>(); 
 	private final Map<String, Integer> incomingEdges    = new HashMap<String, Integer>(); 
 	private final Map<String, Integer> outgoingEdges    = new HashMap<String, Integer>();
     
@@ -348,21 +443,28 @@ class Vertex {
     	this.name = name;
     }
     
-    public Vertex(String name, Map<String, Vertex> incomingVertices, Map<String, Vertex> outgoingVertices,
+    public Vertex(String name,
     		Map<String, Integer> incomingEdges, Map<String, Integer> outgoingEdges) {
     	this.name = name;
-    	this.incomingVertices.putAll(incomingVertices);
-    	this.outgoingVertices.putAll(outgoingVertices);
     	this.incomingEdges.putAll(incomingEdges);
     	this.outgoingEdges.putAll(incomingEdges);
-    	
     }
 	
 	
-    // TODO checkRep
-    // check if name is non empty and all the edges from incomingVertex have positive weight
-	// All the edges to outgoingVertex have positive weight
-	
+    // checkRep
+    // Check that the rep invariant is true
+    private void checkRep() {
+    	assert !name.equals("");
+    	for (Map.Entry<String,Integer> entry: incomingEdges.entrySet()) {
+    		assert !entry.getKey().equals("");
+    		assert entry.getValue().intValue() > 0;
+    	}
+    	for (Map.Entry<String,Integer> entry: outgoingEdges.entrySet()) {
+    		assert !entry.getKey().equals("");
+    		assert entry.getValue().intValue() > 0;
+    	}
+    }
+    
     // methods
     
     /**
@@ -373,6 +475,26 @@ class Vertex {
     	 return this.name;
      }
      
+     /**
+      * Returns a list of outgoing neighbours such that there is a directed edge from this vertex
+      * to all the vertices mentioned in the list 
+      *
+      * @returns returns a list of outgoing neighbours
+      */
+      public Set<String> getOutgoingNeighbours() {
+ 		  return outgoingEdges.keySet();
+      }
+      
+      /**
+       * Returns a list of incoming neighbours such that there is a directed edge from
+       * to all the vertices mentioned in the list to this vertex 
+       *
+       * @returns returns a list of outgoing neighbours
+       */
+       public Set<String> getIncomingNeighbours() {
+  		  return incomingEdges.keySet();
+       }
+       
      /**
       * Returns the weight of the directed edge from this vertex to target
       * If there exist no directed edge between this vertex to target then it 
@@ -407,6 +529,7 @@ class Vertex {
   		  return incomingEdges.get(source);
        }
       
+       
       /**
        * Get the source vertices with directed edges to this vertex and the
        * weights of those edges.
@@ -433,6 +556,7 @@ class Vertex {
     	  return new HashMap<String, Integer>(outgoingEdges);
       }
       
+      
 	/**
 	 * To this vertex adds an weighted incoming directed edge from source vertex and
 	 * to source vertex adds an weighted outgoing directed edge to this vertex 
@@ -444,20 +568,14 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addEdgeFrom(Vertex source, Integer weight) {
-		 String sourceName = source.getName();
-		 // return false if there exist an edge from source or weight is zero
-		 if (hasEdgeFrom(sourceName) || weight == 0) {
+	 public boolean addEdgeFrom(String source, Integer weight) {	
+		 if (hasEdgeFrom(source) || weight == 0) {
 			 return false;
-		 }
-		 // The edge (source---weight--->this vertex ) will be incoming edge to this vertex and 
-		 // outgoing edge from source .
-		 // add an incoming edge from source to this vertex
-		 incomingVertices.put(sourceName,source);
-		 incomingEdges.put(sourceName, weight);
+		 }	
 		 
-		 // add an outgoing edge from source to this vertex
-		 source.addEdgeTo(this, weight);
+		 // add an incoming edge from source to this vertex
+		 incomingEdges.put(source, weight);
+		 checkRep();
 		 return true;
 	 }
 	
@@ -473,16 +591,14 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addEdgeTo(Vertex target, Integer weight) {
-		 String targetName = target.getName();
-		 if (hasEdgeTo(targetName) || weight == 0) {
+	 public boolean addEdgeTo(String target, Integer weight) {
+		 if (hasEdgeTo(target) || weight == 0) {
 			 return false;
 		 }
-		 outgoingVertices.put(targetName, target);
-		 outgoingEdges.put(targetName, weight);
 		 
-		 // add an incoming edge from this vertex to this target
-	     target.addEdgeFrom(this, weight);
+		 // outgoingVertices.put(targetName, target);
+		 outgoingEdges.put(target, weight);
+		 checkRep();
 		 return true;
 	}
 		
@@ -496,24 +612,15 @@ class Vertex {
 	 * @return true if directed weight edge is deleted,
 	 *         otherwise,false. 
 	 */
-	  public boolean deleteEdgeFrom(Vertex source) {
-		 String sourceName = source.getName();
+	  public boolean deleteEdgeFrom(String source) {
 		 // return false if there exist no edge 
-		 if (!hasEdgeFrom(sourceName)) {
+		 if (!hasEdgeFrom(source)) {
 			return false;
 		 }
 		 
-		 /*
-		  * There exist an edge source -> this, so we'll delete from this vertex the incoming edge from source
-		  * and delete from source the outgoing edge to this vertex
-		  */
 		 // delete the incoming edge of this vertex from the source to this vertex
-		 incomingVertices.remove(sourceName);
-		 incomingEdges.remove(sourceName);
-		 
-		 // delete the outgoing edge of the source from the source to this vertex 
-		 source.deleteEdgeTo(this);
-		 
+		 incomingEdges.remove(source);
+		 checkRep();
 		 return true;
 	  }
 		
@@ -527,26 +634,19 @@ class Vertex {
 	 * @return true if all the incoming directed weight edge are deleted,
 	 *         otherwise,false. 
 	 */
-	 public boolean deleteEdgeTo(Vertex target) {
-		 String targetName = target.getName();
+	 public boolean deleteEdgeTo(String target) {
 		 // return false if there exist no edge 
-		 if (!hasEdgeFrom(targetName)) {
+		 if (!hasEdgeFrom(target)) {
 			return false;
 		 }
 		 
-		 /*
-		  * There exist an edge from this -> target so we'll delete from this vertex the outgoing edge to target
-		  * and delete from target the incoming edge from this vertex
-		  */
 		 // delete the outgoing edge of this vertex to target. 
-		 outgoingVertices.remove(targetName);
-		 outgoingEdges.remove(targetName);
-		 
-		 // delete the incoming edge of target from this vertex.
-		 target.deleteEdgeFrom(this);
+		 outgoingEdges.remove(target);
+		 checkRep();
 		 return true;
 	  }
 	
+	 
 	 /**
 	  * Delete all the incoming and outgoing weighted directed edges to and from this vertex 
 	  * If the weighted directed edges are not present, the vertex is not modified
@@ -554,13 +654,14 @@ class Vertex {
 	  */
 	  public void deleteAllEdges() {
 		  // delete all incoming edges
-		  for(Vertex incomingNeighbour:incomingVertices.values()) {
+		  for(String incomingNeighbour:getIncomingNeighbours()) {
 				deleteEdgeFrom(incomingNeighbour);
 			}
 		  // delete all outgoing edges
-		  for(Vertex outgoingNeighbour:outgoingVertices.values()) {
+		  for(String outgoingNeighbour:getOutgoingNeighbours()) {
 				deleteEdgeTo(outgoingNeighbour);
 			}
+		  checkRep();
 	  }
 		
 
@@ -574,17 +675,19 @@ class Vertex {
 	  * @return true if directed weight edge is added,
 	  *         otherwise,false. 
 	  */
-	  public boolean changeEdgeWeightFrom(Vertex source, Integer weight) {
-		  String sourceName = source.getName();
+	  public boolean changeEdgeWeightFrom(String source, Integer weight) {
+		  //String sourceName = source.getName();
 		  // return false if there exist no edge from source or weight is zero
-		  if (!hasEdgeFrom(sourceName) || weight == 0) {
+		  if (!hasEdgeFrom(source) || weight == 0) {
 			  return false;
 		  }
 		  
-		  incomingEdges.put(sourceName, weight);
+		  incomingEdges.put(source, weight);
+		  checkRep();
 		  return true;
 	  }
 	 
+	  
 	  /**
 	   * From this vertex changes the weight of directed edge from this vertex to target vertex.
 	   * If there exist is no edge to target vertex or edge weight is zero,
@@ -595,17 +698,19 @@ class Vertex {
 	   * @return true if directed weight edge is changed,
 	   *         otherwise,false. 
 	   */
-	   public boolean changeEdgeWeightTo(Vertex target, Integer weight) {
-			String targetName = target.getName();
+	   public boolean changeEdgeWeightTo(String target, Integer weight) {
+			// String targetName = target.getName();
 			// return false if there exist no edge to target or weight is zero
-			if (!hasEdgeTo(targetName) || weight == 0) {
+			if (!hasEdgeTo(target) || weight == 0) {
 				return false;
 			}
 			  
-			outgoingEdges.put(targetName, weight);
+			outgoingEdges.put(target, weight);
+			checkRep();
 			return true;
 		  }
 		 
+	   
 	  /**
 	   * Check whether there is a weight directed edge from the source vertex to
 	   * this vertex
@@ -614,10 +719,24 @@ class Vertex {
 	   * @return true if all the incoming directed weight edge are deleted,
 	   *         otherwise,false. 
 	   */
-	   boolean hasEdgeFrom(String source) {
-		   return (incomingVertices.containsKey(source) && incomingEdges.containsKey(source)); 	
+	   public boolean hasEdgeFrom(String source) {
+		   return incomingEdges.containsKey(source); 	
 	   }
+	   
+	   /**
+		* Check whether there is a weight directed edge from the given source vertex to
+		* this vertex whose weight is equal to the given weight
+		* 
+		* @param source, a label of the source vertex, 
+		* @param weight, weight of the incoming edge from source vertex 
+		* @return true if all the incoming directed weight edge are deleted,
+		*         otherwise,false. 
+		*/
+		public boolean hasEdgeFrom(String source, Integer weight) {
+			   return incomingEdges.containsKey(source)	&& incomingEdges.get(source).equals(weight);
+		}
 	
+		
 	   /**
 		* Check whether there is a weight directed edge from the target vertex to
 		* this vertex
@@ -626,10 +745,66 @@ class Vertex {
 		* @return true if all the outing directed weight edge are deleted,
 		*         otherwise,false. 
 		*/
-		boolean hasEdgeTo(String target) {
-			 return (outgoingVertices.containsKey(target) && outgoingEdges.containsKey(target)); 
+		public boolean hasEdgeTo(String target) {
+			 return outgoingEdges.containsKey(target); 
 		}
 		
-    // TODO toString()
-    
+		
+		/**
+		* Check whether there is a weight directed edge from the given target vertex to
+		* this vertex whose weight is equal to the given weight
+		* 
+		* @param target, a label of the target vertex
+		* @param weight, weight of the incoming edge from source vertex 
+		* @return true if all the outing directed weight edge are deleted,
+		*         otherwise,false. 
+		*/
+		public boolean hasEdgeTo(String target, Integer weight) {
+			 return  outgoingEdges.containsKey(target)	&& outgoingEdges.get(target).equals(weight);
+		}
+        
+		/**
+	     * Returns a string representation of the vertex 
+	     * 
+	     * For Example:
+	     * 1. Vertex vertex = new Vertex(California);
+	     *    vertex.addEdgeTo(Delhi, 2000);
+	     *    vertex.addEdgeTo(Boston, 2000);
+	     *    vertex.addEdgeFrom(London, 1000);
+	     *    vertex.addEdgeFrom(Dubai, 1400);
+	     *    System.out.println(vertex);
+	     * 
+	     *    Output:
+	     *    California-----(2000)----->Delhi
+	     *    California-----(2000)----->Boston
+	     *    London-----(1000)----->California
+	     *    Dubai-----(1400)----->California
+	     * 
+	     * 2. Vertex vertex = new Vertex();
+	     *    vertex.add(Hong Kong);
+	     *    vertex.add(Seoul);
+	     *    System.out.println(vertex);
+	     *    
+	     *    Output:
+	     *    Hong Kong
+	     *    Seoul
+	     *    
+	     * @return a string representation of the edge
+	     */
+	    public String toString() {
+	    	// if the vertex is isolated return its name
+	    	if (incomingEdges.isEmpty() && outgoingEdges.isEmpty()) {
+	    		return getName();
+	    	}
+	    	// if vertex is connected return all the incoming and outgoing edges
+	    	String result = "";
+	    	for (Map.Entry<String, Integer> entry: incomingEdges.entrySet()) {
+	    		result += String.format("%s-----(%d)----->%s",this.name ,entry.getValue() ,entry.getKey());
+	    	}
+	    	for (Map.Entry<String, Integer> entry: outgoingEdges.entrySet()) {
+	    		result += String.format("%s-----(%d)----->%s",this.name ,entry.getValue() ,entry.getKey());
+	    	}
+	    	return result;
+	    }
+	    
 }
