@@ -16,9 +16,9 @@ import java.util.HashSet;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteVerticesGraph implements Graph<String> {
+public class ConcreteVerticesGraph<L> implements Graph<L> {
     
-    private final List<Vertex> vertices = new ArrayList<>();
+    private final List<Vertex<L>> vertices = new ArrayList<>();
     
     // Abstraction function:
     //  AF(vertices) = A graph with all its vertices in this.vertices and 
@@ -44,370 +44,386 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	
     }
     
-    // TODO checkRep
-    // Check that the rep invariant is true
-    private void checkRep() {
-    	for(Vertex vertex:vertices) {
-    		List<Integer> incomingVertexIndices = getVertexIndices(vertex.getIncomingNeighbours());
-    		for(Integer index:incomingVertexIndices) {
-    			Vertex incomingVertex = vertices.get(index);
-    			Integer weight = vertex.getIncomingEdgeWeight(incomingVertex.getName());
-    			assert incomingVertex.hasEdgeTo(vertex.getName(), weight);
-    		}
-    		
-    		List<Integer> outgoingVertexIndices = getVertexIndices(vertex.getOutgoingNeighbours());
-    		for(Integer index:outgoingVertexIndices) {
-    			Vertex outgoingVertex = vertices.get(index);
-    			Integer weight = vertex.getOutgoingEdgeWeight(outgoingVertex.getName());
-    			assert outgoingVertex.hasEdgeFrom(vertex.getName(), weight);
-    		}
-    	}
-    }
+	    // TODO checkRep
+	    // Check that the rep invariant is true
+	    private void checkRep() {
+		    	for(Vertex<L> vertex:vertices) {
+		    		List<Integer> incomingVertexIndices = getVertexIndices(vertex.getIncomingNeighbours());
+		    		for(Integer index:incomingVertexIndices) {
+		    			Vertex<L> incomingVertex = vertices.get(index);
+		    			Integer weight = vertex.getIncomingEdgeWeight(incomingVertex.getName());
+		    			assert incomingVertex.hasEdgeTo(vertex.getName(), weight);
+		    		}
+		    		
+		    		List<Integer> outgoingVertexIndices = getVertexIndices(vertex.getOutgoingNeighbours());
+		    		for(Integer index:outgoingVertexIndices) {
+		    			Vertex<L> outgoingVertex = vertices.get(index);
+		    			Integer weight = vertex.getOutgoingEdgeWeight(outgoingVertex.getName());
+		    			assert outgoingVertex.hasEdgeFrom(vertex.getName(), weight);
+		    		}
+		    	}
+	    }
+	    
+	    
+	    @Override public boolean add(L vertex) {
+		    	// create a Vertex object and add it to this.vertices
+		        return addVertex(vertex);
+	    }
+	    
+	    
+	    @Override public int set(L source, L target, int weight) {
+		    	// Case1: weight > 0; An existing edge is being changed or a new edge is being added.
+			    	// Check whether there exist an edge, if yes then an existing edge is being changed
+			    	// otherwise, a new edge is being added
+		    	if(weight > 0) {
+		    		if(hasEdgeBetween(source,target)) {
+		    			int oldWeight = getEdgeWeight(source, target);
+		    	    	changeEdgeWeight(source, target, weight);
+		    	    	checkRep();
+		    	    	return oldWeight;
+		    	    }else {
+		    	    	addEdge(source, target, weight);
+		    	    	checkRep();
+		    	    	return 0;
+		    	    }
+		    	}
+		    	
+		    	// Case2: weight = 0; An existing edge is being deleted.
+			    	// Check whether there exist an edge from source to target,
+		    	if(weight == 0){
+		    		int oldWeight = getEdgeWeight(source, target);
+		    		deleteEdge(source,target);
+		    		checkRep();
+		    	    return oldWeight;
+		    	}
+		    	
+		    	return 0;
+	    }
+	    
+	    
+	    @Override public boolean remove(L vertex) {
+		    	// if the vertex to be removed is absent from this.vertices then return false
+		    	if(hasVertex(vertex)) {
+		    		// find the indices of the outgoing and incoming neighbours from and to the given vertex
+		    		int removedVertexIndex = getVertexIndex(vertex);
+		    		Vertex<L> vertexToBeRemoved = vertices.get(removedVertexIndex);
+		    		
+		    		// Delete all the incoming edges and the outgoing edges to and from this vertex respectively.
+		    		// and then delete the vertex itself
+		    		vertexToBeRemoved.deleteAllEdges();
+		    		vertices.remove(removedVertexIndex);
+		    		
+		    		// Delete all the outgoing edges from vertexToBeremoved 
+		    		List<Integer> outgoingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getOutgoingNeighbours());
+		    		for (Integer neighbourIndex:outgoingNeighboursIndices) {
+		    			Vertex<L> neighbourVertex = vertices.get(neighbourIndex);
+		    			neighbourVertex.deleteEdgeTo(vertex);
+		    		}
+		    		// Delete all the incoming edges to vertexToBeremoved
+		    		List<Integer> incomingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getIncomingNeighbours());
+		    		for (Integer neighbourIndex:incomingNeighboursIndices) {
+		    			Vertex<L> neighbourVertex = vertices.get(neighbourIndex);
+		    			neighbourVertex.deleteEdgeFrom(vertex);
+		    		}
+		    		checkRep();
+		    		return true;
+		    		
+		    	}
+		    	checkRep();
+		    	return false;
+	    	
+	    }
+	    
+	    
+	    @Override public Set<L> vertices() {
+		    	// Create a list of vertices by iterating on this.vertices
+		    	Set<L> verticesName = new HashSet<L>();
+		    	for(Vertex<L> vertex:vertices) {
+		    		verticesName.add(vertex.getName());
+		    	}
+		        return verticesName;
+	    }
+	    
+	    
+	    @Override public Map<L, Integer> sources(L target) {
+		    	// Find the index of target and return a copy of target.incomingVertices
+		    	if (hasVertex(target)) {
+		    		int index = getVertexIndex(target);
+		    		Vertex<L> targetVertex = vertices.get(index);
+		    		return targetVertex.getIncomingEdges();
+		    	}else {
+		    		return new HashMap<L, Integer>();
+		    	}
+	    }
+	    
+	    
+	    @Override public Map<L, Integer> targets(L source) {
+		    	// Find the index of source and return a copy of target.outingVertices 
+		    	if (hasVertex(source)) {
+		    		int index = getVertexIndex(source);
+		    		Vertex<L> sourceVertex = vertices.get(index);
+		    		return sourceVertex.getOutgoingEdges();
+		    	}else {
+		    		return new HashMap<L, Integer>();
+		    	}
+	    }
     
-    @Override public boolean add(String vertex) {
-    	// create a Vertex object and add it to this.vertices
-        return addVertex(vertex);
-    }
+	    
+	    /**
+	     * Returns the weight of the directed edge from source to target from the graph
+	     * If there exist no directed edge between source to target then it 
+	     * return zero.
+	     * 
+	     * @param source, a label of source of the edge
+	     * @param target, a label of target of the edge
+	     * @returns returns weight of the directed edge from source to target (if it exist)
+	     *          otherwise, returns zero if there is no directed edge from source to target
+	     */
+	     private int getEdgeWeight(L source, L target) {
+		   	  	if(hasEdgeBetween(source,target)){
+		   	  		// Find the index of source from this.vertices  
+		          	int sourceIndex = getVertexIndex(source);
+		          	Vertex<L> sourceVertex = vertices.get(sourceIndex);
+		          	 return sourceVertex.getOutgoingEdgeWeight(target);
+		     	 }
+		   	  	return 0;
+	   	    
+	     }
     
-    @Override public int set(String source, String target, int weight) {
-    	// Case1: weight > 0; An existing edge is being changed or a new edge is being added.
-	    	// Check whether there exist an edge, if yes then an existing edge is being changed
-	    	// otherwise, a new edge is being added
-    	if(weight > 0) {
-    		if(hasEdgeBetween(source,target)) {
-    			int oldWeight = getEdgeWeight(source, target);
-    	    	changeEdgeWeight(source, target, weight);
-    	    	checkRep();
-    	    	return oldWeight;
-    	    }else {
-    	    	addEdge(source, target, weight);
-    	    	checkRep();
-    	    	return 0;
-    	    }
-    	}
-    	
-    	// Case2: weight = 0; An existing edge is being deleted.
-	    	// Check whether there exist an edge from source to target,
-    	if(weight == 0){
-    		int oldWeight = getEdgeWeight(source, target);
-    		deleteEdge(source,target);
-    		checkRep();
-    	    return oldWeight;
-    	}
-    	
-    	return 0;
-    }
-    
-    @Override public boolean remove(String vertex) {
-    	// if the vertex to be removed is absent from this.vertices then return false
-    	if(hasVertex(vertex)) {
-    		// find the indices of the outgoing and incoming neighbours from and to the given vertex
-    		int removedVertexIndex = getVertexIndex(vertex);
-    		Vertex vertexToBeRemoved = vertices.get(removedVertexIndex);
-    		
-    		// Delete all the incoming edges and the outgoing edges to and from this vertex respectively.
-    		// and then delete the vertex itself
-    		vertexToBeRemoved.deleteAllEdges();
-    		vertices.remove(removedVertexIndex);
-    		
-    		// Delete all the outgoing edges from vertexToBeremoved 
-    		List<Integer> outgoingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getOutgoingNeighbours());
-    		for (Integer neighbourIndex:outgoingNeighboursIndices) {
-    			Vertex neighbourVertex = vertices.get(neighbourIndex);
-    			neighbourVertex.deleteEdgeTo(vertex);
-    		}
-    		// Delete all the incoming edges to vertexToBeremoved
-    		List<Integer> incomingNeighboursIndices = getVertexIndices(vertexToBeRemoved.getIncomingNeighbours());
-    		for (Integer neighbourIndex:incomingNeighboursIndices) {
-    			Vertex neighbourVertex = vertices.get(neighbourIndex);
-    			neighbourVertex.deleteEdgeFrom(vertex);
-    		}
-    		checkRep();
-    		return true;
-    		
-    	}
-    	checkRep();
-    	return false;
-    	
-    }
-    
-    @Override public Set<String> vertices() {
-    	// Create a list of vertices by iterating on this.vertices
-    	Set<String> verticesName = new HashSet<String>();
-    	for(Vertex vertex:vertices) {
-    		verticesName.add(vertex.getName());
-    	}
-        return verticesName;
-    }
-    
-    @Override public Map<String, Integer> sources(String target) {
-    	// Find the index of target and return a copy of target.incomingVertices
-    	if (hasVertex(target)) {
-    		int index = getVertexIndex(target);
-    		Vertex targetVertex = vertices.get(index);
-    		return targetVertex.getIncomingEdges();
-    	}else {
-    		return new HashMap<String, Integer>();
-    	}
-    }
-    
-    @Override public Map<String, Integer> targets(String source) {
-    	// Find the index of source and return a copy of target.outingVertices 
-    	if (hasVertex(source)) {
-    		int index = getVertexIndex(source);
-    		Vertex sourceVertex = vertices.get(index);
-    		return sourceVertex.getOutgoingEdges();
-    	}else {
-    		return new HashMap<String, Integer>();
-    	}
-    }
-    
-    /**
-     * Returns the weight of the directed edge from source to target from the graph
-     * If there exist no directed edge between source to target then it 
-     * return zero.
-     * 
-     * @param source, a label of source of the edge
-     * @param target, a label of target of the edge
-     * @returns returns weight of the directed edge from source to target (if it exist)
-     *          otherwise, returns zero if there is no directed edge from source to target
-     */
-     private int getEdgeWeight(String source, String target) {
-   	  	if(hasEdgeBetween(source,target)){
-   	  		// Find the index of source from this.vertices  
-          	int sourceIndex = getVertexIndex(source);
-          	Vertex sourceVertex = vertices.get(sourceIndex);
-          	 return sourceVertex.getOutgoingEdgeWeight(target);
-     	 }
-   	  	return 0;
-   	    
-     }
-    
-    /**
-     * To this graph adds a weighted directed edge from source to target into the graph
-     * If the given weight is positive and there exist no directed edge between 
-     * source to target then it adds source or target vertex if they don't exist 
-     * and adds an edge from source to target.
-     * 
-     * @param source, a label of source of the edge
-     * @param target, a label of target of the edge
-     * @returns true if a directed edge is added from source to target
-     *          otherwise, returns false
-     */
-     private boolean addEdge(String source, String target, Integer weight) {
-    	if(hasEdgeBetween(source,target) || weight <= 0) {
-    		 return false;
-    	 }
-    	
-    	// Check whether the current vertex is a source or a target vertex
-    	// Create new source or target vertex if they don't exist in this.vertices. Keep track of there indices
-    	addVertex(source);
-    	addVertex(target);
-    	int sourceIndex = getVertexIndex(source);
-    	int targetIndex = getVertexIndex(target);
-    	Vertex sourceVertex = vertices.get(sourceIndex);
-    	Vertex targetVertex = vertices.get(targetIndex);
-    	
-    	// Add to the source vertex an outgoing edge from source vertex  
-    	// Add to the target vertex an incoming edge from source vertex 
-    	sourceVertex.addEdgeTo(target, weight);
-    	targetVertex.addEdgeFrom(source, weight);
-    	return true;
-     }
+	     
+	    /**
+	     * To this graph adds a weighted directed edge from source to target into the graph
+	     * If the given weight is positive and there exist no directed edge between 
+	     * source to target then it adds source or target vertex if they don't exist 
+	     * and adds an edge from source to target.
+	     * 
+	     * @param source, a label of source of the edge
+	     * @param target, a label of target of the edge
+	     * @returns true if a directed edge is added from source to target
+	     *          otherwise, returns false
+	     */
+	     private boolean addEdge(L source, L target, Integer weight) {
+		    	if(hasEdgeBetween(source,target) || weight <= 0) {
+		    		 return false;
+		    	 }
+		    	
+		    	// Check whether the current vertex is a source or a target vertex
+		    	// Create new source or target vertex if they don't exist in this.vertices. Keep track of there indices
+		    	addVertex(source);
+		    	addVertex(target);
+		    	int sourceIndex = getVertexIndex(source);
+		    	int targetIndex = getVertexIndex(target);
+		    	Vertex<L> sourceVertex = vertices.get(sourceIndex);
+		    	Vertex<L> targetVertex = vertices.get(targetIndex);
+		    	
+		    	// Add to the source vertex an outgoing edge from source vertex  
+		    	// Add to the target vertex an incoming edge from source vertex 
+		    	sourceVertex.addEdgeTo(target, weight);
+		    	targetVertex.addEdgeFrom(source, weight);
+		    	return true;
+	     }
      
-     /**
-      * To this graph adds a vertex into the graph if it is not already present in 
-      * the graph and returns its position in this.vertices
-      * 
-      * @param vertex, a label of source of the edge
-      * @returns true if a new vertex is added 
-      *          otherwise, returns false
-      */
-      private boolean addVertex(String vertex) {
-     	if(hasVertex(vertex)) {
-     		return false;
-     	}
-     	vertices.add(new Vertex(vertex));
-     	return true;
-      }
-      
-     /**
-      * From this graph deletes the weighted directed edge from source to target
-      * If there exist no directed edge between source to target then it 
-      * return false
-      * 
-      * @param source, a label of source of the edge
-      * @param target, a label of target of the edge
-      * @returns true if a directed edge is deleted from source to target
-      *          otherwise, returns false
-      */
-      private boolean deleteEdge(String source, String target) {
-    	  if(!hasEdgeBetween(source,target)) {
-      		 return false;
-      	  }
-    	  
-    	  // Find the indices of source and target from this.vertices  
-      	  int sourceIndex = getVertexIndex(source);
-      	  int targetIndex = getVertexIndex(target);
-      	  Vertex sourceVertex = vertices.get(sourceIndex);
-      	  Vertex targetVertex = vertices.get(targetIndex);
-      	
-          // Delete the target,weight pair from sourceVertex.incomingVertex and
- 	      // source,weight pair from targetVertex.outgoingVertex
-      	  sourceVertex.deleteEdgeTo(target);
-      	  targetVertex.deleteEdgeFrom(source);
-      	  return true;
-      }
+	     
+	     /**
+	      * To this graph adds a vertex into the graph if it is not already present in 
+	      * the graph and returns its position in this.vertices
+	      * 
+	      * @param vertex, a label of source of the edge
+	      * @returns true if a new vertex is added 
+	      *          otherwise, returns false
+	      */
+	      private boolean addVertex(L vertex) {
+		     	if(hasVertex(vertex)) {
+		     		return false;
+		     	}
+		     	vertices.add(new Vertex<>(vertex));
+		     	return true;
+	      }
+	      
+	      
+	     /**
+	      * From this graph deletes the weighted directed edge from source to target
+	      * If there exist no directed edge between source to target then it 
+	      * return false
+	      * 
+	      * @param source, a label of source of the edge
+	      * @param target, a label of target of the edge
+	      * @returns true if a directed edge is deleted from source to target
+	      *          otherwise, returns false
+	      */
+	      private boolean deleteEdge(L source, L target) {
+		    	  if(!hasEdgeBetween(source,target)) {
+		      		 return false;
+		      	  }
+		    	  
+		    	  // Find the indices of source and target from this.vertices  
+		      	  int sourceIndex = getVertexIndex(source);
+		      	  int targetIndex = getVertexIndex(target);
+		      	  Vertex<L> sourceVertex = vertices.get(sourceIndex);
+		      	  Vertex<L> targetVertex = vertices.get(targetIndex);
+		      	
+		          // Delete the target,weight pair from sourceVertex.incomingVertex and
+		 	      // source,weight pair from targetVertex.outgoingVertex
+		      	  sourceVertex.deleteEdgeTo(target);
+		      	  targetVertex.deleteEdgeFrom(source);
+		      	  return true;
+	      }
     
   
-     /**
-      * From this graph changes the weight of an directed edge from source to target
-      * If there exist no directed edge between source to target then it 
-      * return false
-      * 
-      * @param source, a label of source of the edge
-      * @param target, a label of target of the edge
-      * @returns true if a directed edge is deleted from source to target
-      *          otherwise, returns false
-      */
-      private boolean changeEdgeWeight(String source, String target, Integer Weight) {
-     	 if(!hasEdgeBetween(source,target)) {
-       		 return false;
-       	 }
-     	
-	     // Find the indices of source and target from this.vertices
-       	 int sourceIndex = getVertexIndex(source);
-       	 int targetIndex = getVertexIndex(target); 	
-       	 Vertex sourceVertex = vertices.get(sourceIndex);
-       	 Vertex targetVertex = vertices.get(targetIndex);
-       	
-        // Change the value of sourceVertex.outgoingVertex[target] to new weight and
-	    // that of targetVertex.incomingVertex[source] to new weight.
-       	 sourceVertex.changeEdgeWeightTo(target, Weight);
-       	 targetVertex.changeEdgeWeightFrom(source, Weight);
-       	 return true;
-       }
+	     /**
+	      * From this graph changes the weight of an directed edge from source to target
+	      * If there exist no directed edge between source to target then it 
+	      * return false
+	      * 
+	      * @param source, a label of source of the edge
+	      * @param target, a label of target of the edge
+	      * @returns true if a directed edge is deleted from source to target
+	      *          otherwise, returns false
+	      */
+	      private boolean changeEdgeWeight(L source, L target, Integer Weight) {
+		     	 if(!hasEdgeBetween(source,target)) {
+		       		 return false;
+		       	 }
+		     	
+			     // Find the indices of source and target from this.vertices
+		       	 int sourceIndex = getVertexIndex(source);
+		       	 int targetIndex = getVertexIndex(target); 	
+		       	 Vertex<L> sourceVertex = vertices.get(sourceIndex);
+		       	 Vertex<L> targetVertex = vertices.get(targetIndex);
+		       	
+		        // Change the value of sourceVertex.outgoingVertex[target] to new weight and
+			    // that of targetVertex.incomingVertex[source] to new weight.
+		       	 sourceVertex.changeEdgeWeightTo(target, Weight);
+		       	 targetVertex.changeEdgeWeightFrom(source, Weight);
+		       	 return true;
+	       }
    
-    /**
-     * Checks whether this graph has an directed edge between possibleHead 
-     * vertex to possibleTail vertex
-     * 
-     * @param possibleHead, a label for head
-     * @param possibleTail, a label for tail
-     * @returns returns true if there exist a directed weighted edge from 
-     *          possibleHead to possibleTail, otherwise returns false
-     */
-    private boolean hasEdgeBetween(String possibleHead, String possibleTail) {
-    	int headIndex = getVertexIndex(possibleHead);
-    	int tailIndex = getVertexIndex(possibleTail);
-        
-    	if(headIndex == -1 || tailIndex == -1) {
-    		return false;
-    	}
-    	
-    	Vertex head = this.vertices.get(headIndex);
-    	Vertex tail = this.vertices.get(tailIndex);
-    	
-    	return head.hasEdgeTo(tail.getName()) && tail.hasEdgeFrom(head.getName()); 
-    }
+	      
+	    /**
+	     * Checks whether this graph has an directed edge between possibleHead 
+	     * vertex to possibleTail vertex
+	     * 
+	     * @param possibleHead, a label for head
+	     * @param possibleTail, a label for tail
+	     * @returns returns true if there exist a directed weighted edge from 
+	     *          possibleHead to possibleTail, otherwise returns false
+	     */
+	    private boolean hasEdgeBetween(L possibleHead, L possibleTail) {
+		    	int headIndex = getVertexIndex(possibleHead);
+		    	int tailIndex = getVertexIndex(possibleTail);
+		        
+		    	if(headIndex == -1 || tailIndex == -1) {
+		    		return false;
+		    	}
+		    	
+		    	Vertex<L> head = this.vertices.get(headIndex);
+		    	Vertex<L> tail = this.vertices.get(tailIndex);
+		    	
+		    	return head.hasEdgeTo(tail.getName()) && tail.hasEdgeFrom(head.getName()); 
+	    }
     
-    /**
-     * Returns the position of vertex within the this.vertices list having 
-     * its name equal to possibleVertex
-     * 
-     * @param possibleVertex, a label of vertex
-     * @return returns the position of vertex within this.vertices 
-     *         such that 0 <= position < this.vertices.size()
-     *         otherwise, returns -1 if vertex is absent from this.vertices
-     */
-    private int getVertexIndex(String possibleVertex) {
-    	for(int index = 0; index < vertices.size(); index++) {
-    		Vertex vertex = vertices.get(index);
-    		if(vertex.getName().equals(possibleVertex)) {
-    			return index;
-    		}
-    	}
-    	return -1;
-    }
+	    
+	    /**
+	     * Returns the position of vertex within the this.vertices list having 
+	     * its name equal to possibleVertex
+	     * 
+	     * @param possibleVertex, a label of vertex
+	     * @return returns the position of vertex within this.vertices 
+	     *         such that 0 <= position < this.vertices.size()
+	     *         otherwise, returns -1 if vertex is absent from this.vertices
+	     */
+	    private int getVertexIndex(L possibleVertex) {
+		    	for(int index = 0; index < vertices.size(); index++) {
+		    		Vertex<L> vertex = vertices.get(index);
+		    		if(vertex.getName().equals(possibleVertex)) {
+		    			return index;
+		    		}
+		    	}
+		    	return -1;
+	    }
     
-    /**
-     * Checks whether this graph has a vertex with label equal to
-     * possibleVertexName
-     * 
-     * @param possibleVertex, a label for vertex
-     * @returns returns true if there exist a vertex with name equal to
-     *          possibleVertexName in the graph, otherwise returns false
-     */
-    private boolean hasVertex(String possibleVertexName) {
-    	for(Vertex currentVertex:vertices) {
-    		if(currentVertex.getName().equals(possibleVertexName)) {
-    			return true;
-    		}
-    	}
-    	return false;
-    }
+	    
+	    /**
+	     * Checks whether this graph has a vertex with label equal to
+	     * possibleVertexName
+	     * 
+	     * @param possibleVertex, a label for vertex
+	     * @returns returns true if there exist a vertex with name equal to
+	     *          possibleVertexName in the graph, otherwise returns false
+	     */
+	    private boolean hasVertex(L possibleVertexName) {
+		    	for(Vertex<L> currentVertex:vertices) {
+		    		if(currentVertex.getName().equals(possibleVertexName)) {
+		    			return true;
+		    		}
+		    	}
+		    	return false;
+	    }
      
-    /**
-     * Returns a list of indices of the given vertices from this.vertices in the same order
-     * as they appear in the input list
-     * 
-     * @param possibleVertices, a set of vertices, all vertices must be present in this graph
-     * @return a list of indices of vertex in the same order as they appear in the 
-     *         input list
-     */
-    private List<Integer> getVertexIndices(Set<String> possibleVertices) {
-    	List<Integer> indices = new ArrayList<Integer>();
-    	for (int index = 0; index < vertices.size(); index++) {
-    		Vertex currentVertex = vertices.get(index);
-    		String currentVertexName = currentVertex.getName();
-    		if(possibleVertices.contains(currentVertexName)) {
-    			indices.add(index);
-    		}
-    	}
-    	return indices;
-    }
+	    
+	    /**
+	     * Returns a list of indices of the given vertices from this.vertices in the same order
+	     * as they appear in the input list
+	     * 
+	     * @param possibleVertices, a set of vertices, all vertices must be present in this graph
+	     * @return a list of indices of vertex in the same order as they appear in the 
+	     *         input list
+	     */
+	    private List<Integer> getVertexIndices(Set<L> possibleVertices) {
+		    	List<Integer> indices = new ArrayList<Integer>();
+		    	for (int index = 0; index < vertices.size(); index++) {
+		    		Vertex<L> currentVertex = vertices.get(index);
+		    		L currentVertexName = currentVertex.getName();
+		    		if(possibleVertices.contains(currentVertexName)) {
+		    			indices.add(index);
+		    		}
+		    	}
+		    	return indices;
+	    }
     
-    /**
-     * Returns a string representation of the graph 
-     * 
-     * For Example:
-     * ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
-     * graph.set(California, Delhi, 2000);
-     * graph.set(NewYork, California, 48);
-     * graph.add(Seoul);
-     * graph.set(London, NewYork, 379);
-     * graph.set(Berlin, London, 248);
-     * graph.add(Hong Kong);
-     * 
-     * System.out.println(graph);
-     * 
-     * Output:
-     * California-----(2000)----->Delhi
-     * New York-----(48)----->California
-     * Seoul
-     * London-----(379)----->New York
-     * Berlin-----(248)----->London
-     * Hong Kong
-     * 
-     * 
-     * @return a string representation of the graph
-     */
-     public String toString() {
-    	Set<String> subStringSet = new HashSet<String>();
-    	String stringGraph = "";
-    	for (Vertex vertex:vertices) {
-    		for(String substring:vertex.toString().split("\n")) {
-    			if(!subStringSet.contains(substring)) {
-    				subStringSet.add(substring);
-    				stringGraph += substring + "\n" ;
-    			}
-    		}
-    	}
-        
-      	return stringGraph.trim();
-     }
-    
+	    
+        /**
+	     * Returns a string representation of the graph 
+	     * 
+	     * For Example:
+	     * ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+	     * graph.set(California, Delhi, 2000);
+	     * graph.set(NewYork, California, 48);
+	     * graph.add(Seoul);
+	     * graph.set(London, NewYork, 379);
+	     * graph.set(Berlin, London, 248);
+	     * graph.add(Hong Kong);
+	     * 
+	     * System.out.println(graph);
+	     * 
+	     * Output:
+	     * California-----(2000)----->Delhi
+	     * New York-----(48)----->California
+	     * Seoul
+	     * London-----(379)----->New York
+	     * Berlin-----(248)----->London
+	     * Hong Kong
+	     * 
+	     * 
+	     * @return a string representation of the graph
+	     */
+	     public String toString() {
+		    	Set<String> subStringSet = new HashSet<String>();
+		    	String stringGraph = "";
+		    	for (Vertex<L> vertex:vertices) {
+		    		for(String substring:vertex.toString().split("\n")) {
+		    			if(!subStringSet.contains(substring)) {
+		    				subStringSet.add(substring);
+		    				stringGraph += substring + "\n" ;
+		    			}
+		    		}
+		    	}
+		        
+		      	return stringGraph.trim();
+	     }
+     
 }
+
 
 /**
  * specification
@@ -417,14 +433,12 @@ public class ConcreteVerticesGraph implements Graph<String> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Vertex {
+class Vertex<L> {
     
     // fields
-	private final String name;                                                                 // name of the vertex
-	//private final Map<String, Vertex>  incomingVertices = new HashMap<String, Vertex>();                
-	//private final Map<String, Vertex>  outgoingVertices = new HashMap<String, Vertex>(); 
-	private final Map<String, Integer> incomingEdges    = new HashMap<String, Integer>(); 
-	private final Map<String, Integer> outgoingEdges    = new HashMap<String, Integer>();
+	private final L name;             // name of the vertex
+	private final Map<L, Integer> incomingEdges    = new HashMap<L, Integer>(); 
+	private final Map<L, Integer> outgoingEdges    = new HashMap<L, Integer>();
     
     // Abstraction function:
     //   AF(name, incomingVertices, outgoingVertices, 
@@ -441,27 +455,26 @@ class Vertex {
     //   
     
     // Constructor
-    public Vertex(String name){
+    public Vertex(L name){
     	this.name = name;
     }
     
-    public Vertex(String name,
-    		Map<String, Integer> incomingEdges, Map<String, Integer> outgoingEdges) {
+    public Vertex(L name,
+    		Map<L, Integer> incomingEdges, Map<L, Integer> outgoingEdges) {
     	this.name = name;
     	this.incomingEdges.putAll(incomingEdges);
     	this.outgoingEdges.putAll(incomingEdges);
     }
 	
-	
     // checkRep
     // Check that the rep invariant is true
     private void checkRep() {
     	assert !name.equals("");
-    	for (Map.Entry<String,Integer> entry: incomingEdges.entrySet()) {
+    	for (Map.Entry<L,Integer> entry: incomingEdges.entrySet()) {
     		assert !entry.getKey().equals("");
     		assert entry.getValue().intValue() > 0;
     	}
-    	for (Map.Entry<String,Integer> entry: outgoingEdges.entrySet()) {
+    	for (Map.Entry<L,Integer> entry: outgoingEdges.entrySet()) {
     		assert !entry.getKey().equals("");
     		assert entry.getValue().intValue() > 0;
     	}
@@ -473,7 +486,7 @@ class Vertex {
      * Returns the name of this vertex
      * @return the name of this vertex
      */
-     public String getName() {
+     public L getName() {
     	 return this.name;
      }
      
@@ -483,7 +496,7 @@ class Vertex {
       *
       * @returns returns a list of outgoing neighbours
       */
-      public Set<String> getOutgoingNeighbours() {
+      public Set<L> getOutgoingNeighbours() {
  		  return outgoingEdges.keySet();
       }
       
@@ -493,7 +506,7 @@ class Vertex {
        *
        * @returns returns a list of outgoing neighbours
        */
-       public Set<String> getIncomingNeighbours() {
+       public Set<L> getIncomingNeighbours() {
   		  return incomingEdges.keySet();
        }
        
@@ -506,7 +519,7 @@ class Vertex {
       * @returns returns weight of the directed edge from source to target (if it exist)
       *          otherwise, returns 0 if there exist no edge from this vertex to target
       */
-      public int getOutgoingEdgeWeight(String target) {
+      public int getOutgoingEdgeWeight(L target) {
  		  // return false if there exist an edge from source or weight is zero
  		  if (!hasEdgeTo(target)) {
  			 return 0;
@@ -523,7 +536,7 @@ class Vertex {
        * @returns returns weight of the directed edge from source to target (if it exist)
        *          otherwise, returns 0 if there exist no edge from source to this vertex
        */
-       public int getIncomingEdgeWeight(String source) {
+       public int getIncomingEdgeWeight(L source) {
   		  // return false if there exist an edge from source or weight is zero
   		  if (!hasEdgeFrom(source)) {
   			 return 0;
@@ -541,8 +554,8 @@ class Vertex {
        *         the value for each key is the (nonzero) weight of the edge from
        *         the key to target
        */
-      public Map<String, Integer> getIncomingEdges(){
-    	  return new HashMap<String, Integer>(incomingEdges);
+      public Map<L, Integer> getIncomingEdges(){
+    	  return new HashMap<L, Integer>(incomingEdges);
       }
      
       /**
@@ -554,8 +567,8 @@ class Vertex {
        *         the value for each key is the (nonzero) weight of the edge from
        *         source to the key
        */
-      public Map<String, Integer> getOutgoingEdges(){
-    	  return new HashMap<String, Integer>(outgoingEdges);
+      public Map<L, Integer> getOutgoingEdges(){
+    	  return new HashMap<L, Integer>(outgoingEdges);
       }
       
       
@@ -570,7 +583,7 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addEdgeFrom(String source, Integer weight) {	
+	 public boolean addEdgeFrom(L source, Integer weight) {	
 		 if (hasEdgeFrom(source) || weight == 0) {
 			 return false;
 		 }	
@@ -593,7 +606,7 @@ class Vertex {
 	 * @return true if directed weight edge is added,
 	 *         otherwise,false. 
 	 */
-	 public boolean addEdgeTo(String target, Integer weight) {
+	 public boolean addEdgeTo(L target, Integer weight) {
 		 if (hasEdgeTo(target) || weight == 0) {
 			 return false;
 		 }
@@ -614,7 +627,7 @@ class Vertex {
 	 * @return true if directed weight edge is deleted,
 	 *         otherwise,false. 
 	 */
-	  public boolean deleteEdgeFrom(String source) {
+	  public boolean deleteEdgeFrom(L source) {
 		 // return false if there exist no edge 
 		 if (!hasEdgeFrom(source)) {
 			return false;
@@ -636,7 +649,7 @@ class Vertex {
 	 * @return true if all the incoming directed weight edge are deleted,
 	 *         otherwise,false. 
 	 */
-	 public boolean deleteEdgeTo(String target) {
+	 public boolean deleteEdgeTo(L target) {
 		 // return false if there exist no edge 
 		 if (!hasEdgeTo(target)) {
 			return false;
@@ -656,11 +669,11 @@ class Vertex {
 	  */
 	  public void deleteAllEdges() {
 		  // delete all incoming edges
-		  for(String incomingNeighbour:getIncomingNeighbours()) {
+		  for(L incomingNeighbour:getIncomingNeighbours()) {
 				deleteEdgeFrom(incomingNeighbour);
 			}
 		  // delete all outgoing edges
-		  for(String outgoingNeighbour:getOutgoingNeighbours()) {
+		  for(L outgoingNeighbour:getOutgoingNeighbours()) {
 				deleteEdgeTo(outgoingNeighbour);
 			}
 		  checkRep();
@@ -677,8 +690,8 @@ class Vertex {
 	  * @return true if directed weight edge is added,
 	  *         otherwise,false. 
 	  */
-	  public boolean changeEdgeWeightFrom(String source, Integer weight) {
-		  //String sourceName = source.getName();
+	  public boolean changeEdgeWeightFrom(L source, Integer weight) {
+		  //L sourceName = source.getName();
 		  // return false if there exist no edge from source or weight is zero
 		  if (!hasEdgeFrom(source) || weight == 0) {
 			  return false;
@@ -700,7 +713,7 @@ class Vertex {
 	   * @return true if directed weight edge is changed,
 	   *         otherwise,false. 
 	   */
-	   public boolean changeEdgeWeightTo(String target, Integer weight) {
+	   public boolean changeEdgeWeightTo(L target, Integer weight) {
 			// String targetName = target.getName();
 			// return false if there exist no edge to target or weight is zero
 			if (!hasEdgeTo(target) || weight == 0) {
@@ -721,7 +734,7 @@ class Vertex {
 	   * @return true if all the incoming directed weight edge are deleted,
 	   *         otherwise,false. 
 	   */
-	   public boolean hasEdgeFrom(String source) {
+	   public boolean hasEdgeFrom(L source) {
 		   return incomingEdges.containsKey(source); 	
 	   }
 	   
@@ -734,7 +747,7 @@ class Vertex {
 		* @return true if all the incoming directed weight edge are deleted,
 		*         otherwise,false. 
 		*/
-		public boolean hasEdgeFrom(String source, Integer weight) {
+		public boolean hasEdgeFrom(L source, Integer weight) {
 			   return incomingEdges.containsKey(source)	&& incomingEdges.get(source).equals(weight);
 		}
 	
@@ -747,7 +760,7 @@ class Vertex {
 		* @return true if all the outing directed weight edge are deleted,
 		*         otherwise,false. 
 		*/
-		public boolean hasEdgeTo(String target) {
+		public boolean hasEdgeTo(L target) {
 			 return outgoingEdges.containsKey(target); 
 		}
 		
@@ -761,7 +774,7 @@ class Vertex {
 		* @return true if all the outing directed weight edge are deleted,
 		*         otherwise,false. 
 		*/
-		public boolean hasEdgeTo(String target, Integer weight) {
+		public boolean hasEdgeTo(L target, Integer weight) {
 			 return  outgoingEdges.containsKey(target)	&& outgoingEdges.get(target).equals(weight);
 		}
         
@@ -796,19 +809,20 @@ class Vertex {
 	    public String toString() {
 	    	// if the vertex is isolated return its name
 	    	if (incomingEdges.isEmpty() && outgoingEdges.isEmpty()) {
-	    		return getName();
+	    		return getName().toString();
 	    	}
 	    	// if vertex is connected return all the incoming and outgoing edges
 	    	String result = "";
-	    	for (Map.Entry<String, Integer> entry: incomingEdges.entrySet()) {
+	    	for (Map.Entry<L, Integer> entry: incomingEdges.entrySet()) {
 	    		result += String.format("%s-----(%d)----->%s",entry.getKey(), entry.getValue(), this.name);
 	    	    result += "\n";
 	    	}
-	    	for (Map.Entry<String, Integer> entry: outgoingEdges.entrySet()) {
+	    	for (Map.Entry<L, Integer> entry: outgoingEdges.entrySet()) {
 	    		result += String.format("%s-----(%d)----->%s",this.name, entry.getValue(), entry.getKey());
 	    	    result += "\n";
 	    	}
 	    	return result.trim();
 	    }
 	    
+   
 }

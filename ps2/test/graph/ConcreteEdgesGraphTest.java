@@ -21,7 +21,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
      * Provide a ConcreteEdgesGraph for tests in GraphInstanceTest.
      */
     @Override public Graph<String> emptyInstance() {
-        return new ConcreteEdgesGraph();
+        return new ConcreteEdgesGraph<String>();
     }
    
     
@@ -39,7 +39,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // zero vertices, zero edges, zero isolated vertex
     @Test
     public void testtoStringZeroVertexZeroEdges() {
-    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> graph = new ConcreteEdgesGraph<String>();
     	String returnedValue = graph.toString();
     	String expectedValue = "";
     	
@@ -49,7 +49,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // atleast one vertex, zero edge, at-least isolated vertex
     @Test
     public void testtoStringZeroVertexAtleastOneEdge() {
-    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> graph = new ConcreteEdgesGraph<String>();
     	graph.add("California");
     	graph.add("New York");
     	String returnedValue = graph.toString();
@@ -61,7 +61,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // at-least one vertex, at-least one edge, zero isolated vertices
     @Test
     public void testtoStringAtleastVertexAtleastOneEdge() {
-    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> graph = new ConcreteEdgesGraph<String>();
         graph.set("California", "Delhi", 2000);
         graph.set("NewYork", "California", 48);
         graph.set("London", "NewYork", 379);
@@ -81,7 +81,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // at-least one vertex, at-least one edge, zero isolated vertices
     @Test
     public void testtoStringAtleastVertexAtleastOneEdgeOneIsolatedVertex() {
-    	ConcreteEdgesGraph graph = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> graph = new ConcreteEdgesGraph<String>();
         graph.set("California", "Delhi", 2000);
         graph.set("NewYork", "California", 48);
         graph.set("London", "NewYork", 379);
@@ -113,7 +113,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
    
     @Test
     public void testgetHead() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	String returnedHead = edge.getHead();
     
     	assertEquals("Expected to get California", "California", returnedHead);
@@ -122,7 +122,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     @Test
     public void testgetTail() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	String returnedTail = edge.getTail();
     
     	assertEquals("Expected to get New York", "New York", returnedTail);
@@ -131,7 +131,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     @Test
     public void testgetEdgeWeight() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	int returnedEdgeWeight = edge.getEdgeWeight();
     
     	assertEquals("Expected to get New York", 48, returnedEdgeWeight);
@@ -141,7 +141,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // both the possibleHead and possibleTail are absent
     @Test
     public void testgetEdgeBetweenHeadAndTailAbsent() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("New Delhi", "Mumbai");
     
     	assertFalse("Expected to get false, there is no edge between New Delhi to Mumbai", returnedValue);
@@ -151,7 +151,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // both the possibleHead and possibleTail are present
     @Test
     public void testgetEdgeBetweenHeadAndTailPresent() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("California", "New York");
       
     	assertTrue("Expected to get true, there is an edge between California to New York", returnedValue);
@@ -160,7 +160,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleHead is present and possibleTail is absent
     @Test
     public void testgetEdgeBetweenHeadPresentTailAbsent() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("California", "London");
     
     	assertFalse("Expected to get true, there is no edge between California to London", returnedValue);
@@ -169,7 +169,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleHead is absent and possibleTail is present
     @Test
     public void testgetEdgeBetweenHeadAbsentTailPresent() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeBetween("Tel Aviv", "New York");
     
     	assertFalse("Expected to get true, there is no edge between Tel Aviv to New York", returnedValue);
@@ -178,7 +178,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleHead is at head
     @Test
     public void testgetEdgeFromPossibleHeadAtHead() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeFrom("California");
     
     	assertTrue("Expected to get true, there is edge California.", returnedValue);
@@ -187,7 +187,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleHead is not at head
     @Test
     public void testgetEdgeFromPossibleHeadNotAtHead() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeFrom("Tel Aviv");
     
     	assertFalse("Expected to get false, there is no edge from Tel Aviv", returnedValue);
@@ -196,7 +196,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleTail is at tail
     @Test
     public void testgetEdgeToPossibleTailAtTail() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeTo("New York");
         System.out.println(edge.getTail());
     	assertTrue("Expected to get true, there is edge to New York.", returnedValue);
@@ -205,7 +205,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     // possibleTail is not at tail
     @Test
     public void testgetEdgeToPossibleTailNotAtTail() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	boolean returnedValue = edge.hasEdgeTo("Tel Aviv");
         
     	assertFalse("Expected to get false, there is no edge to Tel Aviv", returnedValue);
@@ -214,7 +214,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     @Test
     public void testEdgetoString() {
-    	Edge edge = new Edge("California", "New York", 48);
+    	Edge<String> edge = new Edge<>("California", "New York", 48);
     	String returnedValue = edge.toString();
     	String expectedValue = "California-----(48)----->New York";
     	

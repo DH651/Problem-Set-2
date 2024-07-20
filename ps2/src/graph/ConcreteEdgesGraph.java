@@ -15,10 +15,10 @@ import java.util.HashMap;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteEdgesGraph implements Graph<String> {
+public class ConcreteEdgesGraph<L> implements Graph<L> {
     // Fields
-    private final Set<String> vertices = new HashSet<>();
-    private final List<Edge> edges = new ArrayList<>();
+    private final Set<L> vertices = new HashSet<>();
+    private final List<Edge<L>> edges = new ArrayList<>();
     
     // Abstraction function:
     //   AF(vertices, edges) = A directed positive edge weight graph 
@@ -34,7 +34,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     
     
     // Constructor to create a graph with vertices and edges
-    public ConcreteEdgesGraph(Set<String> vertices,List<Edge> edges){
+    public ConcreteEdgesGraph(Set<L> vertices,List<Edge<L>> edges){
     	this.vertices.addAll(vertices);
     	this.edges.addAll(edges);
     }
@@ -47,12 +47,12 @@ public class ConcreteEdgesGraph implements Graph<String> {
     // checkRep
     // Check that the rep invariant is true
     private void checkRep() {
-    	for(Edge edge:edges) {
+    	for(Edge<L> edge:edges) {
     		assert vertices.contains(edge.getHead()) && vertices.contains(edge.getTail());
     	}
     }
     
-    @Override public boolean add(String vertex) {
+    @Override public boolean add(L vertex) {
     	// if vertex is already present in vertices, return false 
     	// otherwise, add the vertex in vertices and return true
     	if(vertices.contains(vertex)){
@@ -65,7 +65,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	
     }
     
-    @Override public int set(String source, String target, int weight) {
+    @Override public int set(L source, L target, int weight) {
     	
     	// Case 1: Weight > 0, edge is added or changed.
     	//         If there is an edge between source to target, this implies edge weight is being changed, 
@@ -95,10 +95,10 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	return 0;
     }
     
-    @Override public boolean remove(String vertex) {
+    @Override public boolean remove(L vertex) {
     	// Removes all the incident from vertex or incident to vertex 
     	for(int index = edges.size() - 1; index > -1; index--) {
-    		Edge currentEdge = edges.get(index);
+    		Edge<L> currentEdge = edges.get(index);
     		if(currentEdge.hasEdgeFrom(vertex) || currentEdge.hasEdgeTo(vertex)) {
     			edges.remove(index);		
     		}
@@ -107,17 +107,17 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	return isDeleted;
     }
     
-    @Override public Set<String> vertices() {
+    @Override public Set<L> vertices() {
     	// Returns a copy of this.vertices
-    	Set<String> newVertices = new HashSet<String>(vertices);
+    	Set<L> newVertices = new HashSet<L>(vertices);
     	checkRep();
         return newVertices;
     }
     
-    @Override public Map<String, Integer> sources(String target) {
+    @Override public Map<L, Integer> sources(L target) {
     	// check if the current edge has the target equal to target  if yes then add the source of current edges to sources
-    	Map<String, Integer> sources = new HashMap<String, Integer>(); 
-    	for(Edge currentEdge:edges) {
+    	Map<L, Integer> sources = new HashMap<L, Integer>(); 
+    	for(Edge<L> currentEdge:edges) {
     		if(currentEdge.hasEdgeTo(target)) {
     			sources.put(currentEdge.getHead(), currentEdge.getEdgeWeight());
     		}
@@ -126,10 +126,10 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	return sources;
     }
     
-    @Override public Map<String, Integer> targets(String source) {
+    @Override public Map<L, Integer> targets(L source) {
     	// check if the current edge has the source equal to source if yes then add the target of current edges to targets
-    	Map<String, Integer> targets = new HashMap<String, Integer>(); 
-    	for(Edge currentEdge:edges) {
+    	Map<L, Integer> targets = new HashMap<L, Integer>(); 
+    	for(Edge<L> currentEdge:edges) {
     		if(currentEdge.hasEdgeFrom(source)) {
     			targets.put(currentEdge.getTail(), currentEdge.getEdgeWeight());
     		}
@@ -147,8 +147,8 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @return returns true if this graph has a directed edge from head to tail, 
      *         otherwise returns false if no edge exists from head to tail
      */
-    private boolean hasEdgeBetween(String possibleHead, String possibleTail) {
-    	for(Edge currentEdge:this.edges) {
+    private boolean hasEdgeBetween(L possibleHead, L possibleTail) {
+    	for(Edge<L> currentEdge:this.edges) {
         		if( currentEdge.hasEdgeBetween(possibleHead, possibleTail) ) {
         			return true;
         		}
@@ -165,10 +165,10 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param possibleTail, a label
      * @return the weight of the removed edge, or zero if there was no such edge
      */
-    private int removeEdge(String possibleHead, String possibleTail) {
+    private int removeEdge(L possibleHead, L possibleTail) {
     	// Iterate over this.edges and if there is an edge from possibleHead to possibleTail removes it
     	// and returns true, Otherwise, return false.
-    	for (Edge currentEdge:edges) {
+    	for (Edge<L> currentEdge:edges) {
     		if(currentEdge.hasEdgeBetween(possibleHead, possibleTail)) {
     			edges.remove(currentEdge);
     			return currentEdge.getEdgeWeight();
@@ -191,7 +191,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @returns true if a directed edge is added from source to target
      *          otherwise, returns false if no edge was added
      */
-     private boolean addEdge(String source, String target, Integer weight) {
+     private boolean addEdge(L source, L target, Integer weight) {
     	// If source or target are absent from this.vertices, add source and target to this.vertices; 
     	if (hasEdgeBetween(source, target) | weight <= 0) {
     		return false;
@@ -202,7 +202,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      		if(!vertices.contains(target)) {
      			vertices.add(target);
      		}
-     		edges.add(new Edge(source, target, weight)); // add new edge
+     		edges.add(new Edge<>(source, target, weight)); // add new edge
      		checkRep();
      		return true;
     	}
@@ -220,11 +220,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
       * @returns previous weight of the directed edge if the edge is changed,
       *          otherwise, returns zero if there was no such edge
       */
-      private int changeEdgeWeight(String source, String target, Integer newWeight) {
+      private int changeEdgeWeight(L source, L target, Integer newWeight) {
      	// If source or target are absent from this.vertices, add source and target to this.vertices; 
     	if(this.hasEdgeBetween(source, target) && newWeight > 0 ) {
   			int previousEdgeWeight = removeEdge(source, target); // remove exiting edge 
-  			edges.add(new Edge(source, target, newWeight)); // add new edge
+  			edges.add(new Edge<L>(source, target, newWeight)); // add new edge
   			checkRep();
   			return previousEdgeWeight;
   		}
@@ -254,11 +254,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @return a string representation of the graph
      */
      public String toString() {
-    	 Set<String> connectedVertices = new HashSet<String>();
+    	 Set<L> connectedVertices = new HashSet<L>();
     	 
     	// Add edges to result
     	String stringGraph = "";
-      	for(Edge edge:edges) {
+      	for(Edge<L> edge:edges) {
  
       		connectedVertices.add(edge.getHead());
       		connectedVertices.add(edge.getTail());
@@ -267,14 +267,16 @@ public class ConcreteEdgesGraph implements Graph<String> {
       	}
       	
       	// Add those vertices that don't have incoming and outgoing edges
-      	Set<String> isolatedVertices = new HashSet<String>(vertices);
+      	Set<L> isolatedVertices = new HashSet<L>(vertices);
       	isolatedVertices.removeIf(item -> connectedVertices.contains(item));
-      	for(String vertex:isolatedVertices) {
+      	for(L vertex:isolatedVertices) {
       		stringGraph += vertex.toString() + "\n";
       	}
       	
       	return stringGraph.trim();
      }
+     
+      
     
 }
 
@@ -285,11 +287,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Edge {
+class Edge<L> {
     
    // fields
-	private final String head;
-	private final String tail;
+	private final L head;
+	private final L tail;
 	private final Integer weight;
 	
     
@@ -306,7 +308,7 @@ class Edge {
 	//   All the observers and creators don't expose the internal representation.
     
     // constructor
-    Edge(String head, String tail, int weight){
+    Edge(L head, L tail, int weight){
     	this.head = head;
     	this.tail = tail;
     	this.weight = weight;
@@ -326,7 +328,7 @@ class Edge {
      * 
      * @return the source vertex of this directed edge.
      */
-    public String getHead() {
+    public L getHead() {
     	return head;
     }
      
@@ -336,7 +338,7 @@ class Edge {
      * 
      * @return the target vertex of this directed edge 
      */
-    public String getTail() {
+    public L getTail() {
     	return tail;
     }
     
@@ -360,7 +362,7 @@ class Edge {
      * @return returns true if this edge has its head & tail vertex equal 
      *         to the given possibleHead & possibleTail, otherwise returns false
      */
-    public boolean hasEdgeBetween(String possibleHead, String possibleTail) {
+    public boolean hasEdgeBetween(L possibleHead, L possibleTail) {
     	return this.head.equals(possibleHead) && this.tail.equals(possibleTail);
     }
     
@@ -373,7 +375,7 @@ class Edge {
      * @return returns true if this edge has its head equal 
      *         to the posibleHead, otherwise returns false
      */
-    public boolean hasEdgeFrom(String posibleHead) {
+    public boolean hasEdgeFrom(L posibleHead) {
     	return this.head.equals(posibleHead);
     }
     
@@ -386,7 +388,7 @@ class Edge {
      * @return returns true if this directed edge has its tail equal 
      *         to the vertex, otherwise returns false
      */
-    public boolean hasEdgeTo(String vertex) {
+    public boolean hasEdgeTo(L vertex) {
     	return this.tail.equals(vertex);
     }
     

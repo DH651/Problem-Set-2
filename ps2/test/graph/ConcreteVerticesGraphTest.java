@@ -22,7 +22,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
      * Provide a ConcreteVerticesGraph for tests in GraphInstanceTest.
      */
     @Override public Graph<String> emptyInstance() {
-        return new ConcreteVerticesGraph();
+        return new ConcreteVerticesGraph<String>();
     }
     
     /*
@@ -39,7 +39,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // zero vertices, zero edges, zero isolated vertex
     @Test
     public void testtoStringZeroVertexZeroEdges() {
-    	ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+    	ConcreteVerticesGraph<String> graph = new ConcreteVerticesGraph<>();
     	String returnedValue = graph.toString();
     	String expectedValue = "";
     	
@@ -49,7 +49,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // atleast one vertex, zero edge, at-least isolated vertex
     @Test
     public void testtoStringZeroVertexAtleastOneEdge() {
-    	ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+    	ConcreteVerticesGraph<String> graph = new ConcreteVerticesGraph<>();
     	graph.add("California");
     	graph.add("New York");
     	String returnedValue = graph.toString();
@@ -61,7 +61,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // at-least one vertex, at-least one edge, zero isolated vertices
     @Test
     public void testtoStringAtleastVertexAtleastOneEdge() {
-    	ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+    	ConcreteVerticesGraph<String> graph = new ConcreteVerticesGraph<>();
         graph.set("California", "Delhi", 2000);
         graph.set("NewYork", "California", 48);
         graph.set("London", "NewYork", 379);
@@ -81,7 +81,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // at-least one vertex, at-least one edge, zero isolated vertices
     @Test
     public void testtoStringAtleastVertexAtleastOneEdgeOneIsolatedVertex() {
-    	ConcreteVerticesGraph graph = new ConcreteVerticesGraph();
+    	ConcreteVerticesGraph<String> graph = new ConcreteVerticesGraph<>();
         graph.set("California", "Delhi", 2000);
         graph.set("NewYork", "California", 48);
         graph.set("London", "NewYork", 379);
@@ -125,7 +125,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source, weight is greater than zero
     @Test
     public void testEdgeFromWeightPositive() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
     	
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
@@ -152,7 +152,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Absence of incoming edge from source, weight is zero
     @Test
     public void testEdgeFromWeightZeroEdgeAbsentFirst() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
@@ -170,7 +170,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source, weight is zero
     @Test
     public void testEdgeFromWeightZeroEdgePresentFirst() {
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
@@ -194,7 +194,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of outgoing edge from target, weight is greater than zero
     @Test
     public void testEdgeToWeightPositive() {  	
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
@@ -218,7 +218,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testEdgeToWeightZeroEdgeAbsentFirst() {
    
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     	
     	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
@@ -239,7 +239,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of outgoing edge from source, weight is zero
     @Test
     public void testEdgeToWeightZeroEdgePresentFirst() {
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));	
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
@@ -263,7 +263,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source
     @Test
     public void testDeleteEdgeFromPresentEdge() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
@@ -287,7 +287,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source
     @Test
     public void testDeleteEdgeFromAbsentEdge() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
 	
     	boolean actualResult2 = California.deleteEdgeFrom("NewYork");
     	
@@ -303,7 +303,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testDeleteEdgeToPresentEdge() {
   
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
       	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
@@ -329,7 +329,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testDeleteEdgeToAbsentEdge() {
     	
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     	
     	boolean actualResult2 = NewYork.deleteEdgeTo("California");
     	
@@ -346,7 +346,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Presence of incoming edge from source, new weight is zero.
     @Test
     public void testChangeEdgeWeightFromPresentEdge() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
@@ -378,7 +378,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // Absence of incoming edge from source, new weight is zero.
     @Test
     public void testChangeEdgeWeightFromAbsentEdge() {
-    	Vertex California = new Vertex("California");
+    	Vertex<String> California = new Vertex<>("California");
     	
     	assertFalse("There should be no edge from New York to California", California.hasEdgeFrom("NewYork"));
     	assertEquals("Expected no edge from New York to California and thus zero edge weight", 0,  California.getIncomingEdgeWeight("NewYork"));
@@ -404,7 +404,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testChangeEdgeWeightToPresentEdge() {
     	
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     	
     	
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
@@ -437,7 +437,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     public void testChangeEdgeWeightToAbsentEdge() {
     	
-    	Vertex NewYork = new Vertex("NewYork");
+    	Vertex<String> NewYork = new Vertex<>("NewYork");
     
     	assertFalse("There should be no edge to California from New York", NewYork.hasEdgeTo("California"));
     	assertEquals("Expected no edge to California from New York  and thus zero edge weight", 0, NewYork.getOutgoingEdgeWeight("California"));
@@ -459,7 +459,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // isolated vertex
     @Test
     public void testVertextoStringIsolated() {
-    	Vertex vertex = new Vertex("California");
+    	Vertex<String> vertex = new Vertex<>("California");
     	String returnedValue = vertex.toString();
     	String expectedValue = "California";
     	
@@ -469,7 +469,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // isolated vertex
     @Test
     public void testVertextoStringConnected() {
-    	Vertex vertex = new Vertex("California");
+    	Vertex<String> vertex = new Vertex<>("California");
     	vertex.addEdgeFrom("NewYork", 24);
     	vertex.addEdgeTo("Boston", 48);
     	String returnedValue = vertex.toString();

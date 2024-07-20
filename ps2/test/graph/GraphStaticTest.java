@@ -33,6 +33,37 @@ public class GraphStaticTest {
                 Collections.emptySet(), Graph.empty().vertices());
     }
     
-    // TODO test other vertex label types in Problem 3.2
+    // test other vertex label types in Problem 3.2
+    @Test
+    public void testIntegerLabel() {
+    	Graph<Integer> graph = Graph.empty();
+    	graph.set(23, 35, 67);
+    	String returnedValue = graph.toString();
+    	String expectedValue = String.join("\n", "23-----(67)----->35");
+                
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
+    }
+    
+ // test other vertex label types in Problem 3.2
+    @Test
+    public void testFloatLabel() {
+    	Graph<Double> graph = Graph.empty();
+    	graph.set(23.45, 35.595, 67);
+    	String returnedValue = graph.toString();
+    	String expectedValue = String.join("\n", "23.45-----(67)----->35.595");
+                
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
+    }
+    
+ // test other vertex label types in Problem 3.2
+    @Test
+    public void testCharacterLabel() {
+    	Graph<Character> graph = Graph.empty();
+    	graph.set('A', 'B', 67);
+    	String returnedValue = graph.toString();
+    	String expectedValue = String.join("\n", "A-----(67)----->B");
+                
+    	assertEquals("Returned string does not matches the expected string", expectedValue, returnedValue);
+    }
     
 }
